@@ -2,9 +2,8 @@ package com.pucmm.csti19105488.config;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import.dev.morphia.Morphia;
-import dev.morphia.Datastore;
 import dev.morphia.Morphia;
+import dev.morphia.Datastore;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -25,13 +24,6 @@ public class MongoConfig {
 
             // Se crea el Datastore de Morphia
             this.datastore = Morphia.createDatastore(mongoClient, props.getProperty("mongo.database"));
-
-            // Se le especifica a Morphia donde estan las clases modelo (@Entity)
-            this.datastore.getMapper().mapPackage("com.pucmm.csti19105488.model");
-
-            // Se indexan los datos para facilitar la busqueda mas adelante, por ahora no es relevante
-            // pero en un escenario con muchos datos es más rápido
-            this.datastore.ensureIndexes();
 
         }   catch (IOException e) {
             throw new RuntimeException("Error al cargar config.properties", e);
