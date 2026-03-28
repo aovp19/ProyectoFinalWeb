@@ -57,4 +57,7 @@ public class EncuestaService {
     }
 
 
+    public Object listarEncuestasPorUsuario(Usuario usuario) {
+        return encuestaDAO.buscarPorEncuestador(usuario);
+    }
 }
