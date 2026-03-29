@@ -14,12 +14,12 @@ public class Usuario {
     private String apellido;
     private String email;
     private String password;
-    @Reference
     private Rol rol;
     private boolean activo;
     private String fotoBase64;
 
 
+    public Usuario() { }
     public Usuario(String nombre, String apellido, String email, String password, Rol role) {
         this.nombre = nombre;
         this.apellido = apellido;

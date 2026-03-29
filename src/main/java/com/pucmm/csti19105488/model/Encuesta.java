@@ -24,6 +24,7 @@ public class Encuesta {
     private String fotoBase64;
     private boolean sincronizado;
 
+    public Encuesta() { }
     public Encuesta(Usuario encuestador, String nombreEncuastado, String apellidoEncuastado, String sector, NivelEducativo educacion, Ubicacion ubicacion) {
         this.encuestador = encuestador;
         this.nombreEncuestado = nombreEncuastado;

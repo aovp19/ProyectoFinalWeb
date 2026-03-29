@@ -50,7 +50,7 @@ public class UsuarioDAO implements RepositorioBase<Usuario>{
 
     public Usuario buscarPorEmail(String email) {
         return datastore.find(Usuario.class)
-                .filter(Filters.eq("username", email))
+                .filter(Filters.eq("email", email))
                 .first();
     }
 }
