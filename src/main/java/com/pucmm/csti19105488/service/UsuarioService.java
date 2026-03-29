@@ -54,7 +54,7 @@ public class UsuarioService {
         if (usuario == null) {
             throw new RuntimeException("Usuario no encontrado");
         }
-        if (usuario.getRole() == Rol.ADMIN) {
+        if (usuario.getRol() == Rol.ADMIN) {
             throw new RuntimeException("No se puede eliminar un administrador");
         }
         usuarioDAO.eliminar(id);

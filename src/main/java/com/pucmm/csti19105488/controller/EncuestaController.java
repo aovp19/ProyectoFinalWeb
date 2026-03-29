@@ -4,61 +4,77 @@ import com.pucmm.csti19105488.model.Encuesta;
 import com.pucmm.csti19105488.model.Usuario;
 import com.pucmm.csti19105488.service.EncuestaService;
 import com.pucmm.csti19105488.service.UsuarioService;
-import io.javalin.Javalin;
 import org.bson.types.ObjectId;
+
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class EncuestaController {
 
     private static EncuestaService encuestaService = new EncuestaService();
     private static UsuarioService usuarioService = new UsuarioService();
 
-    public static void registrarRutas(Javalin app){
+    public static void registrarRutas(){
 
-        // Crear encuesta
-        app.post("/encuestas", ctx -> {
-            Encuesta encuesta = ctx.bodyAsClass(Encuesta.class);
-            encuestaService.crearEncuesta(encuesta);
-            ctx.status(201).json("Encuesta creada exitosamente");
-        });
+        path("/encuestas", () -> {
 
-        // Listar encuestas
-        app.get("/encuestas", ctx -> {
-            ctx.json(encuestaService.listarTodasEncuestas());
-        });
+            // Crear encuesta
+            post( ctx -> {
+                Encuesta encuesta = ctx.bodyAsClass(Encuesta.class);
+                encuestaService.crearEncuesta(encuesta);
+                ctx.status(201).json("Encuesta creada exitosamente");
+            });
 
-        // Listar encuestas por usuario
-        app.get("/encuestas/usuario/{id}", ctx -> {
-            String id = ctx.pathParam("id");
-            Usuario usuario = usuarioService.buscarPorId(new ObjectId(id));
-            ctx.json(encuestaService.listarEncuestasPorUsuario(usuario));
-        });
+            // Listar encuestas
+            get( ctx -> {
+                ctx.json(encuestaService.listarTodasEncuestas());
+            });
 
-        // Buscar encuesta por id
-        app.get("/encuestas/{id}", ctx -> {
-            String id = ctx.pathParam("id");
-            Encuesta encuesta = encuestaService.buscarEncuestaPorId(new ObjectId(id));
-            ctx.json(encuesta);
-        });
+            // Listar encuestas por usuario
+            path("/usuario/{id}", () -> {
 
-        // Actualizar encuesta
-        app.put("/encuestas/{id}", ctx -> {
-           Encuesta encuesta = ctx.bodyAsClass(Encuesta.class);
-           encuestaService.actualizarEncuesta(encuesta);
-           ctx.status(200).json("Encuesta actualizada exitosamente");
-        });
+                get( ctx -> {
+                    String id = ctx.pathParam("id");
+                    Usuario usuario = usuarioService.buscarPorId(new ObjectId(id));
+                    ctx.json(encuestaService.listarEncuestasPorUsuario(usuario));
+                });
+            });
 
-        // Eliminar encuesta
-        app.delete("/encuestas/{id}", ctx -> {
-            String id = ctx.pathParam("id");
-            encuestaService.eliminarEncuesta(new ObjectId(id));
-            ctx.status(200).json("Encuesta eliminada exitosamente");
-        });
 
-        // Sincronizar encuesta
-        app.put("/encuestas/sincronizar/{id}", ctx -> {
-            String id = ctx.pathParam("id");
-            encuestaService.sincronizarEncuesta(encuestaService.buscarEncuestaPorId(new ObjectId(id)));
-            ctx.status(200).json("Encuesta sincronizada exitosamente");
+            path("/{id}", () -> {
+
+                // Buscar encuesta por id
+                get(ctx -> {
+                    String id = ctx.pathParam("id");
+                    Encuesta encuesta = encuestaService.buscarEncuestaPorId(new ObjectId(id));
+                    ctx.json(encuesta);
+                });
+
+
+                // Actualizar encuesta
+                put(ctx -> {
+                    Encuesta encuesta = ctx.bodyAsClass(Encuesta.class);
+                    encuestaService.actualizarEncuesta(encuesta);
+                    ctx.status(200).json("Encuesta actualizada exitosamente");
+                });
+
+
+                // Eliminar encuesta
+                delete( ctx -> {
+                    String id = ctx.pathParam("id");
+                    encuestaService.eliminarEncuesta(new ObjectId(id));
+                    ctx.status(200).json("Encuesta eliminada exitosamente");
+                });
+
+                path("/sincronizar", () -> {
+
+                    // Sincronizar encuesta
+                    put(ctx -> {
+                        String id = ctx.pathParam("id");
+                        encuestaService.sincronizarEncuesta(encuestaService.buscarEncuestaPorId(new ObjectId(id)));
+                        ctx.status(200).json("Encuesta sincronizada exitosamente");
+                    });
+                });
+            });
         });
     }
 }

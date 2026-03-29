@@ -15,7 +15,7 @@ public class Usuario {
     private String email;
     private String password;
     @Reference
-    private Rol role;
+    private Rol rol;
     private boolean activo;
     private String fotoBase64;
 
@@ -25,7 +25,7 @@ public class Usuario {
         this.apellido = apellido;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.rol = role;
         this.activo = true;
     }
 
@@ -35,7 +35,7 @@ public class Usuario {
     public String getApellido() { return apellido; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
-    public Rol getRole() { return role; }
+    public Rol getRol() { return rol; }
     public boolean isActivo() { return activo; }
     public String getFotoBase64() { return fotoBase64; }
 
@@ -44,7 +44,7 @@ public class Usuario {
     public void setApellido(String apellido) { this.apellido = apellido; }
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
-    public void setRole(Rol role) { this.role = role; }
+    public void setRol(Rol role) { this.rol = role; }
     public void setActivo(boolean activo) { this.activo = activo; }
     public void setFotoBase64(String fotoBase64) { this.fotoBase64 = fotoBase64; }
 }
