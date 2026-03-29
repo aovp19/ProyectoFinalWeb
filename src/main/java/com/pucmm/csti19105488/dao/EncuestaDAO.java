@@ -58,4 +58,10 @@ public class EncuestaDAO implements RepositorioBase<Encuesta>{
                 .filter(Filters.eq("sincronizado", false))
                 .iterator().toList();
     }
+
+    public Encuesta buscarPorCedula(String cedula) {
+        return datastore.find(Encuesta.class)
+                .filter(Filters.eq("cedula", cedula))
+                .first();
+    }
 }

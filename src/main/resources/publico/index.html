@@ -7,179 +7,244 @@
     <title>Encuestas PUCMM - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/estilos.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --cream: #FAF8F4;
+            --ink: #1A1714;
+            --ink-light: #6B6560;
+            --ink-lighter: #B8B3AE;
+            --accent: #2B5BDB;
+            --accent-dark: #1A3A9E;
+            --success: #1A7A4A;
+            --danger: #A32D2D;
+            --danger-bg: #FCEBEB;
+            --border: #E5E1DB;
+            --surface: #FFFFFF;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
+            font-family: 'DM Sans', sans-serif;
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            font-family: 'Segoe UI', sans-serif;
+            background: var(--cream);
             overflow: hidden;
         }
 
-        /* Burbujas animadas de fondo */
-        .burbujas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .burbuja {
-            position: absolute;
-            bottom: -150px;
-            border-radius: 50%;
-            animation: flotar 8s infinite ease-in;
-            opacity: 0.15;
-        }
-
-        .burbuja:nth-child(1) { width: 80px; height: 80px; left: 10%; background: #7b2ff7; animation-duration: 7s; }
-        .burbuja:nth-child(2) { width: 120px; height: 120px; left: 25%; background: #4a90d9; animation-duration: 10s; animation-delay: 1s; }
-        .burbuja:nth-child(3) { width: 60px; height: 60px; left: 50%; background: #a855f7; animation-duration: 8s; animation-delay: 2s; }
-        .burbuja:nth-child(4) { width: 100px; height: 100px; left: 70%; background: #3b82f6; animation-duration: 12s; animation-delay: 0.5s; }
-        .burbuja:nth-child(5) { width: 50px; height: 50px; left: 85%; background: #8b5cf6; animation-duration: 9s; animation-delay: 3s; }
-
-        @keyframes flotar {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
-            100% { transform: translateY(-110vh) rotate(720deg); opacity: 0; }
-        }
-
-        /* Tarjeta glassmorphism */
-        .glass-card {
+        /* ── COLUMNA IZQUIERDA ── */
+        .login-left {
+            flex: 1;
+            background: var(--ink);
             position: relative;
-            z-index: 1;
-            background: rgba(255, 255, 255, 0.07);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
             padding: 2.5rem;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            min-width: 280px;
         }
 
-        .logo-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #7b2ff7, #4a90d9);
-            border-radius: 20px;
+        .login-left-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .login-left-glow {
+            position: absolute;
+            inset: 0;
+            background:
+                    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(43,91,219,0.35) 0%, transparent 60%),
+                    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(43,91,219,0.15) 0%, transparent 55%);
+        }
+
+        .login-brand {
+            position: absolute;
+            top: 2.5rem;
+            left: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+        }
+
+        .login-brand-sq {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 2rem;
+        }
+
+        .login-brand-sq i { color: white; font-size: 15px; }
+        .login-brand-name { color: white; font-weight: 600; font-size: 14px; }
+
+        .login-left-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-tagline {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
             color: white;
-            box-shadow: 0 8px 20px rgba(123, 47, 247, 0.4);
+            line-height: 1.3;
+            margin-bottom: 8px;
         }
 
-        h4 {
-            color: white;
-            font-weight: 700;
-            font-size: 1.5rem;
+        .login-tagline-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.3px;
         }
 
-        .subtitulo {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
+        /* ── COLUMNA DERECHA ── */
+        .login-right {
+            flex: 1.1;
+            max-width: 480px;
+            background: var(--surface);
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
+        .login-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+
+        .login-desc {
+            font-size: 13px;
+            color: var(--ink-light);
+            margin-bottom: 2rem;
+        }
+
+        /* ── FORM ── */
         .form-label {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.85rem;
+            font-size: 11px;
             font-weight: 500;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
             margin-bottom: 6px;
         }
 
-        .input-group-text {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: rgba(255, 255, 255, 0.6);
-        }
-
         .form-control {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            transition: all 0.3s;
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--ink);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            transition: border .2s, box-shadow .2s;
         }
 
         .form-control:focus {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: #7b2ff7;
-            box-shadow: 0 0 0 3px rgba(123, 47, 247, 0.25);
-            color: white;
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(43,91,219,0.08);
+            color: var(--ink);
         }
 
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.3);
+        .form-control::placeholder { color: var(--ink-lighter); }
+
+        .input-group-text {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            color: var(--ink-light);
         }
 
+        /* ── BOTÓN LOGIN ── */
         .btn-login {
-            background: linear-gradient(135deg, #7b2ff7, #4a90d9);
+            background: var(--accent);
             border: none;
             color: white;
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
             padding: 12px;
-            border-radius: 12px;
-            transition: all 0.3s;
-            letter-spacing: 0.5px;
+            border-radius: 8px;
+            transition: background .2s;
+            letter-spacing: 0.2px;
         }
 
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(123, 47, 247, 0.5);
-            color: white;
-        }
+        .btn-login:hover { background: var(--accent-dark); color: white; }
+        .btn-login:active { transform: scale(0.99); }
+        .btn-login:disabled { background: var(--ink-lighter); }
 
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
+        /* ── ALERTA ── */
         .alert-custom {
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.4);
-            color: #ff8fa3;
-            border-radius: 12px;
-            font-size: 0.85rem;
+            background: var(--danger-bg);
+            border: 0.5px solid rgba(163,45,45,0.25);
+            color: var(--danger);
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 10px 14px;
         }
 
-        .divider {
-            border-color: rgba(255, 255, 255, 0.1);
+        /* ── FOOTER ── */
+        .login-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .login-footer-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            flex-shrink: 0;
+        }
+
+        .login-footer-txt {
+            font-size: 11px;
+            color: var(--ink-lighter);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .login-left { display: none; }
+            .login-right { max-width: 100%; padding: 2rem 1.5rem; }
         }
     </style>
 </head>
 <body>
 
-<!-- Burbujas de fondo -->
-<div class="burbujas">
-    <div class="burbuja"></div>
-    <div class="burbuja"></div>
-    <div class="burbuja"></div>
-    <div class="burbuja"></div>
-    <div class="burbuja"></div>
-</div>
+<!-- Columna izquierda — marca -->
+<div class="login-left">
+    <div class="login-left-grid"></div>
+    <div class="login-left-glow"></div>
 
-<!-- Tarjeta de login -->
-<div class="glass-card mx-3">
-    <div class="text-center mb-4">
-        <div class="logo-icon">
+    <div class="login-brand">
+        <div class="login-brand-sq">
             <i class="bi bi-clipboard-data-fill"></i>
         </div>
-        <h4>Encuestas PUCMM</h4>
-        <p class="subtitulo">Oficina de Planeamiento</p>
+        <span class="login-brand-name">Encuestas PUCMM</span>
     </div>
+
+    <div class="login-left-text">
+        <div class="login-tagline">Oficina de<br>Planeamiento</div>
+        <div class="login-tagline-sub">Sistema de gestión de encuestas en campo</div>
+    </div>
+</div>
+
+<!-- Columna derecha — formulario -->
+<div class="login-right">
+    <div class="login-title">Bienvenido de vuelta</div>
+    <div class="login-desc">Ingresa tus credenciales para continuar</div>
 
     <div id="alerta" class="alert alert-custom d-none mb-3" role="alert">
         <i class="bi bi-exclamation-circle me-2"></i>
@@ -190,7 +255,7 @@
         <div class="mb-3">
             <label class="form-label">Correo electrónico</label>
             <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                 <input type="email" class="form-control" id="email"
                        placeholder="correo@pucmm.edu.do" required>
             </div>
@@ -199,20 +264,25 @@
         <div class="mb-4">
             <label class="form-label">Contraseña</label>
             <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
                 <input type="password" class="form-control" id="password"
                        placeholder="••••••••" required>
                 <button class="input-group-text" type="button" id="togglePassword"
                         style="cursor:pointer; border-left: none;">
-                    <i class="bi bi-eye-fill" id="iconoOjo"></i>
+                    <i class="bi bi-eye" id="iconoOjo"></i>
                 </button>
             </div>
         </div>
 
         <button type="submit" class="btn btn-login w-100" id="btnLogin">
-            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
         </button>
     </form>
+
+    <div class="login-footer">
+        <div class="login-footer-dot"></div>
+        <span class="login-footer-txt">Proyecto Final — ICC352 — PUCMM 2026</span>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -274,7 +344,7 @@
             mostrarAlerta("Error al conectar con el servidor");
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión';
+            btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión';
         }
     });
 

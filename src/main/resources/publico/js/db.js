@@ -6,6 +6,12 @@ let db;
 // Inicializar la base de datos local
 function inicializarDB() {
     return new Promise((resolve, reject) => {
+
+        // Si ya está abierta y no se está cerrando, reutilizarla
+        if (db && db.objectStoreNames.length > 0) {
+            resolve(db);
+            return;
+        }
         const request = indexedDB.open(DB_NOMBRE, DB_VERSION);
 
         request.onupgradeneeded = (event) => {

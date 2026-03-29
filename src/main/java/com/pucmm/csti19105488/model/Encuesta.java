@@ -18,6 +18,7 @@ public class Encuesta {
     private Usuario encuestador;
     private String nombreEncuestado;
     private String apellidoEncuestado;
+    private String cedula;
     private String sector;
     private NivelEducativo educacion;
     private Ubicacion ubicacion;
@@ -26,10 +27,11 @@ public class Encuesta {
     private boolean sincronizado;
 
     public Encuesta() { }
-    public Encuesta(Usuario encuestador, String nombreEncuastado, String apellidoEncuastado, String sector, NivelEducativo educacion, Ubicacion ubicacion) {
+    public Encuesta(Usuario encuestador, String nombreEncuestado, String apellidoEncuestado, String cedula, String sector, NivelEducativo educacion, Ubicacion ubicacion) {
         this.encuestador = encuestador;
-        this.nombreEncuestado = nombreEncuastado;
-        this.apellidoEncuestado = apellidoEncuastado;
+        this.nombreEncuestado = nombreEncuestado;
+        this.apellidoEncuestado = apellidoEncuestado;
+        this.cedula = cedula;
         this.sector = sector;
         this.educacion = educacion;
         this.fechaRegistro = LocalDateTime.now();
@@ -42,6 +44,7 @@ public class Encuesta {
     public Usuario getEncuestador() { return encuestador; }
     public String getNombreEncuestado() { return nombreEncuestado; }
     public String getApellidoEncuestado() { return apellidoEncuestado; }
+    public String getCedula() {return cedula; }
     public String getSector() { return sector; }
     public NivelEducativo getEducacion() { return educacion; }
     public LocalDateTime getFechaRegistro() { return fechaRegistro; }
@@ -53,12 +56,11 @@ public class Encuesta {
     public void setEncuestador(Usuario encuestador) { this.encuestador = encuestador; }
     public void setNombreEncuestado(String nombreEncuestado) { this.nombreEncuestado = nombreEncuestado; }
     public void setApellidoEncuestado(String apellidoEncuestado) { this.apellidoEncuestado = apellidoEncuestado; }
+    public void setCedula(String cedula) {this.cedula = cedula;}
     public void setSector(String sector) { this.sector = sector; }
     public void setEducacion(NivelEducativo educacion) { this.educacion = educacion; }
     public void setUbicacion(Ubicacion ubicacion) { this.ubicacion = ubicacion; }
     public void setFotoBase64(String fotoBase64) { this.fotoBase64 = fotoBase64; }
     public void setSincronizado(boolean sincronizado) { this.sincronizado = sincronizado; }
-
-
 
 }

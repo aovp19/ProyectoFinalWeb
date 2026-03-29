@@ -1,0 +1,132 @@
+(function () {
+
+    // ── CONFIGURACIÓN DE NAVEGACIÓN ──
+    const NAV_ITEMS = [
+        {
+            section: "Principal",
+            items: [
+                { label: "Dashboard",  icon: "bi-grid",         href: "/dashboard.html" },
+                { label: "Encuestas",  icon: "bi-file-text",    href: "/encuestas.html" },
+                { label: "Ver en mapa",icon: "bi-map",          href: "/mapa.html"      },
+            ]
+        },
+        {
+            section: "Administración",
+            adminOnly: true,
+            items: [
+                { label: "Usuarios", icon: "bi-people", href: "/usuarios.html", adminOnly: true }
+            ]
+        }
+    ];
+
+    // ── DETECTA LA PÁGINA ACTIVA ──
+    function isActive(href) {
+        return window.location.pathname === href ||
+            window.location.pathname.endsWith(href);
+    }
+
+    // ── GENERA LAS INICIALES DEL USUARIO ──
+    function getInitials() {
+        const nombre   = localStorage.getItem("nombre")   || "";
+        const apellido = localStorage.getItem("apellido") || "";
+        if (nombre && apellido) return (nombre[0] + apellido[0]).toUpperCase();
+        const email = localStorage.getItem("email") || "?";
+        return email[0].toUpperCase();
+    }
+
+    function getDisplayName() {
+        const nombre   = localStorage.getItem("nombre");
+        const apellido = localStorage.getItem("apellido");
+        if (nombre && apellido) return `${nombre} ${apellido}`;
+        return localStorage.getItem("email") || "Usuario";
+    }
+
+    function getRol() {
+        const rol = localStorage.getItem("rol") || "";
+        return rol === "ADMIN" ? "Administrador" : "Encuestador";
+    }
+
+    // ── GENERA EL HTML DEL SIDEBAR ──
+    function buildSidebar() {
+        const rol = localStorage.getItem("rol");
+        const isAdmin = rol === "ADMIN";
+
+        let sectionsHTML = "";
+
+        NAV_ITEMS.forEach(section => {
+            if (section.adminOnly && !isAdmin) return;
+
+            let itemsHTML = "";
+            section.items.forEach(item => {
+                if (item.adminOnly && !isAdmin) return;
+                const active = isActive(item.href) ? "active" : "";
+                itemsHTML += `
+          <a href="${item.href}" class="sidebar-item ${active}">
+            <i class="bi ${item.icon}"></i>
+            ${item.label}
+          </a>`;
+            });
+
+            sectionsHTML += `
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">${section.section}</div>
+          ${itemsHTML}
+        </div>`;
+        });
+
+        return `
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-sq">
+          <i class="bi bi-clipboard-data-fill"></i>
+        </div>
+        <span class="sidebar-logo-name">PUCMM</span>
+      </div>
+
+      ${sectionsHTML}
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">${getInitials()}</div>
+        <div>
+          <div class="sidebar-user-name">${getDisplayName()}</div>
+          <div class="sidebar-user-role">${getRol()}</div>
+        </div>
+      </div>`;
+    }
+
+    // ── INYECTA EL SIDEBAR EN EL DOM ──
+    function injectSidebar() {
+        const sidebar = document.querySelector(".sidebar");
+        if (!sidebar) return;
+        sidebar.innerHTML = buildSidebar();
+    }
+
+    // ── INYECTA LOS ESTILOS BASE (si no están ya) ──
+    function injectStyles() {
+        if (document.getElementById("base-styles")) return;
+        const link = document.createElement("link");
+        link.id   = "base-styles";
+        link.rel  = "stylesheet";
+        link.href = "/css/estilos.css";
+        document.head.appendChild(link);
+
+        const fonts = document.createElement("link");
+        fonts.rel  = "stylesheet";
+        fonts.href = "https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap";
+        document.head.appendChild(fonts);
+    }
+
+    // ── FUNCIÓN GLOBAL PARA CERRAR SESIÓN ──
+    window.cerrarSesion = function () {
+        localStorage.clear();
+        window.location.href = "/index.html";
+    };
+
+    // ── INIT ──
+    document.addEventListener("DOMContentLoaded", function () {
+        injectStyles();
+        injectSidebar();
+    });
+
+})();

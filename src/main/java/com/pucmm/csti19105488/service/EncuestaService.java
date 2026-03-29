@@ -16,11 +16,16 @@ public class EncuestaService {
     }
 
     public void crearEncuesta(Encuesta encuesta){
+        if (encuesta.getCedula() != null && !encuesta.getCedula().isBlank()) {
+            Encuesta existente = encuestaDAO.buscarPorCedula(encuesta.getCedula());
+            if (existente != null) {
+                throw new RuntimeException("Ya existe una encuesta registrada con la cédula " + encuesta.getCedula());
+            }
+        }
         encuestaDAO.guardar(encuesta);
     }
 
     public void actualizarEncuesta(Encuesta encuesta){
-        // No se puede actualizar una encuesta sincronizada
         if (encuesta.isSincronizado()){
             throw new RuntimeException("No se puede actualizar una encuesta sincronizada");
         }

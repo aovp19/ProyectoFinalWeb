@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="/js/db.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuestas PUCMM - Nueva Encuesta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/estilos.css">
+    <script src="/js/base.js"></script>
+    <style>
+        :root {
+            --cream: #FAF8F4;
+            --ink: #1A1714;
+            --ink-light: #6B6560;
+            --ink-lighter: #B8B3AE;
+            --accent: #2B5BDB;
+            --accent-light: #E8EEFF;
+            --accent-dark: #1A3A9E;
+            --success: #1A7A4A;
+            --success-bg: #E8F5EE;
+            --warning: #B85C00;
+            --warning-bg: #FFF3E8;
+            --danger: #A32D2D;
+            --danger-bg: #FCEBEB;
+            --border: #E5E1DB;
+            --surface: #FFFFFF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        .app-shell { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 220px;
+            background: var(--ink);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .main {
+            flex: 1;
+            margin-left: 220px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 0.5px solid var(--border);
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-title { font-size: 16px; font-weight: 600; color: var(--ink); }
+        .topbar-sub   { font-size: 12px; color: var(--ink-light); }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            background: transparent;
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--ink-light);
+            cursor: pointer;
+            transition: all .15s;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .btn-back:hover {
+            background: var(--cream);
+            color: var(--ink);
+            border-color: var(--ink-lighter);
+        }
+
+        /* ── PAGE BODY ── */
+        .page-body {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ── FORM CARD ── */
+        .form-card {
+            background: var(--surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 640px;
+            overflow: hidden;
+        }
+
+        .form-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-card-icon {
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            background: var(--accent-light);
+            color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .form-card-title { font-size: 14px; font-weight: 600; color: var(--ink); }
+        .form-card-sub   { font-size: 12px; color: var(--ink-light); }
+
+        .form-card-body  { padding: 1.5rem; }
+
+        .form-card-footer {
+            padding: 1rem 1.5rem;
+            border-top: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* ── SEPARADOR DE SECCIÓN ── */
+        .section-divider {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--ink-lighter);
+            font-weight: 500;
+            margin: 1.25rem 0 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 0.5px;
+            background: var(--border);
+        }
+
+        /* ── ALERTAS ── */
+        .alert-glass-danger {
+            background: var(--danger-bg);
+            border: 0.5px solid rgba(163,45,45,0.25);
+            color: var(--danger);
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-glass-success {
+            background: var(--success-bg);
+            border: 0.5px solid rgba(26,122,74,0.25);
+            color: var(--success);
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 1rem;
+        }
+
+        /* ── FORM CONTROLS ── */
+        .form-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-control, .form-select {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--ink);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            transition: border .2s, box-shadow .2s;
+            width: 100%;
+            padding: 9px 12px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(43,91,219,0.08);
+            color: var(--ink);
+            outline: none;
+        }
+
+        .form-control::placeholder { color: var(--ink-lighter); }
+        .form-control[readonly] {
+            opacity: 0.65;
+            cursor: not-allowed;
+            background: var(--cream);
+        }
+
+        /* ── DOS COLUMNAS ── */
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ── FOTO ── */
+        .foto-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .foto-btns button { flex: 1; justify-content: center; }
+
+        #previewFoto {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 0.5px solid var(--border);
+            display: none;
+            margin-top: 4px;
+        }
+
+        #seccionCamara { display: none; margin-top: 4px; }
+
+        #webcam {
+            width: 100%;
+            border-radius: 8px;
+            border: 0.5px solid var(--border);
+        }
+
+        .camara-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        /* ── UBICACIÓN ── */
+        .ubicacion-coords {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* ── BOTONES ── */
+        .btn-primary-glass {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .2s;
+            text-decoration: none;
+        }
+
+        .btn-primary-glass:hover { background: var(--accent-dark); color: white; }
+
+        .btn-secondary-glass {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--ink);
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .2s;
+            text-decoration: none;
+        }
+
+        .btn-secondary-glass:hover { background: var(--cream); color: var(--ink); }
+
+        .btn-danger-glass {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 0.5px solid rgba(163,45,45,0.2);
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .2s;
+        }
+
+        .btn-danger-glass:hover { background: #F7C1C1; }
+
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(163,45,45,0.08);
+            border: 0.5px solid rgba(163,45,45,0.2);
+            color: var(--danger);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .2s;
+        }
+
+        .btn-logout:hover { background: var(--danger-bg); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .row-2 { grid-template-columns: 1fr; }
+            .ubicacion-coords { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <div class="sidebar"></div>
+
+    <div class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <a href="/encuestas.html" class="btn-back">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div>
+                    <div class="topbar-title" id="tituloTopbar">Nueva encuesta</div>
+                    <div class="topbar-sub">Completa los campos del formulario</div>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-logout" onclick="cerrarSesion()">
+                    <i class="bi bi-box-arrow-right"></i>Salir
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="page-body">
+            <div class="form-card">
+
+                <div class="form-card-header">
+                    <div class="form-card-icon">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                    <div>
+                        <div class="form-card-title" id="tituloCard">Datos del encuestado</div>
+                        <div class="form-card-sub">Ingresa la información recopilada en campo</div>
+                    </div>
+                </div>
+
+                <div class="form-card-body">
+
+                    <!-- Alertas -->
+                    <div id="alerta" class="alert-glass-danger d-none">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <span id="mensajeAlerta"></span>
+                    </div>
+                    <div id="alertaExito" class="alert-glass-success d-none">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span id="mensajeExito"></span>
+                    </div>
+
+                    <input type="hidden" id="encuestaId">
+
+                    <!-- Datos personales -->
+                    <div class="section-divider">Datos personales</div>
+
+                    <div class="row-2 mb-3">
+                        <div>
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombreEncuestado" placeholder="Nombre">
+                        </div>
+                        <div>
+                            <label class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="apellidoEncuestado" placeholder="Apellido">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cédula</label>
+                            <input type="text" class="form-control" id="cedula" placeholder="000-0000000-0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sector</label>
+                        <input type="text" class="form-control" id="sector" placeholder="Ej. Los Jardines, Villa Consuelo...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nivel educativo</label>
+                        <select class="form-select" id="educacion">
+                            <option value="BASICO">Básico</option>
+                            <option value="MEDIO">Medio</option>
+                            <option value="GRADO">Grado Universitario</option>
+                            <option value="POSTGRADO">Postgrado</option>
+                            <option value="DOCTORADO">Doctorado</option>
+                        </select>
+                    </div>
+
+                    <!-- Foto -->
+                    <div class="section-divider">Fotografía</div>
+
+                    <div class="mb-3">
+                        <div class="foto-btns">
+                            <button type="button" class="btn-secondary-glass" onclick="mostrarCamara()">
+                                <i class="bi bi-camera"></i>Cámara
+                            </button>
+                            <button type="button" class="btn-secondary-glass" onclick="mostrarExplorador()">
+                                <i class="bi bi-upload"></i>Subir foto
+                            </button>
+                        </div>
+
+                        <div id="seccionCamara">
+                            <video id="webcam" autoplay playsinline></video>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                            <div class="camara-actions">
+                                <button type="button" class="btn-primary-glass" style="flex:1;justify-content:center;" onclick="tomarFoto()">
+                                    <i class="bi bi-camera-fill"></i>Tomar foto
+                                </button>
+                                <button type="button" class="btn-danger-glass" onclick="cerrarCamara()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="file" id="inputFoto" accept="image/*" capture="environment"
+                               class="d-none" onchange="procesarFoto(this)">
+
+                        <img id="previewFoto" src="" alt="Preview de foto">
+                    </div>
+
+                    <!-- Ubicación -->
+                    <div class="section-divider">Ubicación</div>
+
+                    <div class="mb-3">
+                        <div class="ubicacion-coords">
+                            <div>
+                                <label class="form-label">Latitud</label>
+                                <input type="text" class="form-control" id="latitud" placeholder="—" readonly>
+                            </div>
+                            <div>
+                                <label class="form-label">Longitud</label>
+                                <input type="text" class="form-control" id="longitud" placeholder="—" readonly>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-secondary-glass w-100 justify-content-center" onclick="obtenerUbicacion()">
+                            <i class="bi bi-geo-alt"></i>Obtener ubicación GPS
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="form-card-footer">
+                    <a href="/encuestas.html" class="btn-secondary-glass">
+                        <i class="bi bi-x-lg"></i>Cancelar
+                    </a>
+                    <button class="btn-primary-glass" onclick="guardarEncuesta()">
+                        <i class="bi bi-save"></i>Guardar encuesta
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_URL = "http://localhost:7000";
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/index.html";
+
+    let modoEdicion = false;
+    let fotoBase64 = null;
+
+    // ── DETECTA SI ES EDICIÓN POR ?id= ──
+    async function iniciar() {
+        await inicializarDB();
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        if (id) {
+            modoEdicion = true;
+            document.getElementById("tituloTopbar").textContent = "Editar encuesta";
+            document.getElementById("tituloCard").textContent  = "Editar datos del encuestado";
+            document.getElementById("encuestaId").value = id;
+            await cargarEncuesta(id);
+        }
+    }
+
+    async function cargarEncuesta(id) {
+        try {
+            // Intentar cargar desde el servidor
+            if (estaOnline()) {
+                const response = await fetch(`${API_URL}/encuestas/${id}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const e = await response.json();
+                    rellenarFormulario(e);
+                    return;
+                }
+            }
+            // Si no hay conexión, buscar en IndexedDB
+            const locales = await obtenerEncuestasLocales();
+            const e = locales.find(enc => String(enc.id) === String(id));
+            if (e) rellenarFormulario(e);
+
+        } catch (error) {
+            mostrarError("No se pudo cargar la encuesta");
+        }
+    }
+
+    function rellenarFormulario(e) {
+        document.getElementById("nombreEncuestado").value  = e.nombreEncuestado;
+        document.getElementById("apellidoEncuestado").value = e.apellidoEncuestado;
+        document.getElementById("cedula").value            = e.cedula || "";
+        document.getElementById("sector").value            = e.sector;
+        document.getElementById("educacion").value         = e.educacion;
+        document.getElementById("latitud").value           = e.ubicacion?.latitud  || "";
+        document.getElementById("longitud").value          = e.ubicacion?.longitud || "";
+
+        if (e.fotoBase64) {
+            fotoBase64 = e.fotoBase64;
+            const preview = document.getElementById("previewFoto");
+            preview.src = `data:image/jpeg;base64,${e.fotoBase64}`;
+            preview.style.display = "block";
+        }
+    }
+
+    async function guardarEncuesta() {
+
+        const id      = document.getElementById("encuestaId").value;
+        const latitud = document.getElementById("latitud").value;
+        const longitud = document.getElementById("longitud").value;
+        const cedula = document.getElementById("cedula").value.trim();
+
+        await inicializarDB();
+        // Validar si es duplicado
+        if (cedula && !modoEdicion){
+            const locales = await obtenerEncuestasLocales();
+            const duplicadoLocal = locales.find(enc => enc.cedula === cedula);
+            if(duplicadoLocal){
+                mostrarError(`Ya existe una encuesta local bajo esta cédula: ${cedula}`);
+                return;
+            }
+        }
+
+
+
+
+        const encuesta = {
+            nombreEncuestado:   document.getElementById("nombreEncuestado").value,
+            apellidoEncuestado: document.getElementById("apellidoEncuestado").value,
+            sector:             document.getElementById("sector").value,
+            cedula:             cedula,
+            educacion:          document.getElementById("educacion").value,
+            fotoBase64:         fotoBase64,
+            sincronizado:       true,
+            ubicacion: latitud && longitud ? {
+                latitud:  parseFloat(latitud),
+                longitud: parseFloat(longitud)
+            } : null
+        };
+
+        // ── OFFLINE ──
+        if (!estaOnline()) {
+            try {
+                if (modoEdicion) {
+                    await actualizarEncuestaLocal({ ...encuesta, id: Number(id) });
+                    mostrarExito("Encuesta actualizada localmente");
+                } else {
+                    await guardarEncuestaLocal(encuesta);
+                    mostrarExito("Sin conexión — Encuesta guardada localmente");
+                }
+            } catch (error) {
+                mostrarError("Error al guardar localmente");
+            }
+            return;
+        }
+
+        // ── ONLINE ──
+        try {
+            const url    = modoEdicion ? `${API_URL}/encuestas/${id}` : `${API_URL}/encuestas`;
+            const method = modoEdicion ? "PUT" : "POST";
+
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(encuesta)
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            mostrarExito(modoEdicion ? "Encuesta actualizada exitosamente" : "Encuesta guardada exitosamente");
+
+            // Si es nueva, limpiar el formulario para poder registrar otra
+            if (!modoEdicion) limpiarFormulario();
+
+        } catch (error) {
+            await guardarEncuestaLocal(encuesta);
+            mostrarExito("Error de conexión — Encuesta guardada localmente");
+            if (!modoEdicion) limpiarFormulario();
+        }
+    }
+
+    function limpiarFormulario() {
+        document.getElementById("nombreEncuestado").value  = "";
+        document.getElementById("apellidoEncuestado").value = "";
+        document.getElementById("cedula").value            = "";
+        document.getElementById("sector").value            = "";
+        document.getElementById("educacion").value         = "BASICO";
+        document.getElementById("latitud").value           = "";
+        document.getElementById("longitud").value          = "";
+        document.getElementById("previewFoto").style.display = "none";
+        fotoBase64 = null;
+        cerrarCamara();
+    }
+
+    // ── FOTO ──
+    function procesarFoto(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            fotoBase64 = e.target.result.split(",")[1];
+            const preview = document.getElementById("previewFoto");
+            preview.src = e.target.result;
+            preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function mostrarCamara() {
+        document.getElementById("seccionCamara").style.display = "block";
+        const video = document.getElementById("webcam");
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => { video.srcObject = stream; video._stream = stream; })
+            .catch(() => mostrarError("No se pudo acceder a la cámara"));
+    }
+
+    function cerrarCamara() {
+        const video = document.getElementById("webcam");
+        if (video._stream) {
+            video._stream.getTracks().forEach(t => t.stop());
+            video._stream = null;
+        }
+        document.getElementById("seccionCamara").style.display = "none";
+    }
+
+    function mostrarExplorador() {
+        cerrarCamara();
+        document.getElementById("inputFoto").click();
+    }
+
+    function tomarFoto() {
+        const video  = document.getElementById("webcam");
+        const canvas = document.getElementById("canvas");
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL("image/jpeg");
+        fotoBase64 = dataUrl.split(",")[1];
+        const preview = document.getElementById("previewFoto");
+        preview.src = dataUrl;
+        preview.style.display = "block";
+        mostrarExito("Foto tomada");
+        cerrarCamara();
+    }
+
+    // ── UBICACIÓN ──
+    function obtenerUbicacion() {
+        if (!navigator.geolocation) {
+            mostrarError("Tu dispositivo no soporta geolocalización");
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                document.getElementById("latitud").value  = pos.coords.latitude;
+                document.getElementById("longitud").value = pos.coords.longitude;
+                mostrarExito("Ubicación obtenida");
+            },
+            () => mostrarError("No se pudo obtener la ubicación")
+        );
+    }
+
+    // ── ALERTAS ──
+    function mostrarError(mensaje) {
+        const el = document.getElementById("alerta");
+        document.getElementById("mensajeAlerta").textContent = mensaje;
+        el.classList.remove("d-none");
+        setTimeout(() => el.classList.add("d-none"), 4000);
+    }
+
+    function mostrarExito(mensaje) {
+        const el = document.getElementById("alertaExito");
+        document.getElementById("mensajeExito").textContent = mensaje;
+        el.classList.remove("d-none");
+        setTimeout(() => el.classList.add("d-none"), 4000);
+    }
+
+    function cerrarSesion() {
+        localStorage.clear();
+        window.location.href = "/index.html";
+    }
+
+    iniciar();
+</script>
+</body>
+</html>
