@@ -201,6 +201,7 @@
     </div>
     <div class="offcanvas-body">
         <input type="hidden" id="activoUsuario">
+        <input type="hidden" id="usuarioId">
         <div class="mb-3">
             <label class="form-label">Nombre</label>
             <input type="text" class="form-control" id="nombre" placeholder="Nombre">
@@ -369,9 +370,6 @@
             rol: document.getElementById("rolUsuario").value,
             activo: document.getElementById("activoUsuario").value === "true"
         };
-
-        console.log("Usuario a guardar:", usuario); // ← agrega esto
-        console.log("Activo value:", document.getElementById("activoUsuario").value); // ← y esto
 
         try {
             const url = modoEdicion ? `${API_URL}/usuarios/${id}` : `${API_URL}/usuarios`;

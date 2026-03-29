@@ -1,5 +1,6 @@
 package com.pucmm.csti19105488.model;
 
+import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -18,7 +19,6 @@ public class Encuesta {
     private String apellidoEncuestado;
     private String sector;
     private NivelEducativo educacion;
-    @Reference
     private Ubicacion ubicacion;
     private LocalDateTime fechaRegistro;
     private String fotoBase64;
@@ -39,7 +39,7 @@ public class Encuesta {
     //Getters y setters
     public String getId() { return id.toHexString(); }
     public Usuario getEncuestador() { return encuestador; }
-    public String getNombreEncuastado() { return nombreEncuestado; }
+    public String getNombreEncuestado() { return nombreEncuestado; }
     public String getApellidoEncuestado() { return apellidoEncuestado; }
     public String getSector() { return sector; }
     public NivelEducativo getEducacion() { return educacion; }
@@ -48,8 +48,9 @@ public class Encuesta {
     public String getFotoBase64() { return fotoBase64; }
     public boolean isSincronizado() { return sincronizado; }
 
+    public void setId(ObjectId id) { this.id = id; }
     public void setEncuestador(Usuario encuestador) { this.encuestador = encuestador; }
-    public void setNombreEncuastado(String nombreEncuastado) { this.nombreEncuestado = nombreEncuastado; }
+    public void setNombreEncuestado(String nombreEncuestado) { this.nombreEncuestado = nombreEncuestado; }
     public void setApellidoEncuestado(String apellidoEncuestado) { this.apellidoEncuestado = apellidoEncuestado; }
     public void setSector(String sector) { this.sector = sector; }
     public void setEducacion(NivelEducativo educacion) { this.educacion = educacion; }
