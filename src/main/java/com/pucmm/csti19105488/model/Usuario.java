@@ -15,22 +15,22 @@ public class Usuario {
     private String email;
     private String password;
     private Rol rol;
-    private boolean activo;
+    private boolean activo = true;
     private String fotoBase64;
 
 
     public Usuario() { }
-    public Usuario(String nombre, String apellido, String email, String password, Rol role) {
+    public Usuario(String nombre, String apellido, String email, String password, Rol rol) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
         this.password = password;
-        this.rol = role;
+        this.rol = rol;
         this.activo = true;
     }
 
     //Setters y getters
-    public String getId() { return id.toHexString(); }
+    public String getId() { return id != null ? id.toHexString() : null; }
     public String getNombre() { return nombre; }
     public String getApellido() { return apellido; }
     public String getEmail() { return email; }
@@ -39,12 +39,12 @@ public class Usuario {
     public boolean isActivo() { return activo; }
     public String getFotoBase64() { return fotoBase64; }
 
-
+    public void setId(ObjectId id) {this.id = id;}
     public void setNombre(String nombre) { this.nombre = nombre; }
     public void setApellido(String apellido) { this.apellido = apellido; }
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
-    public void setRol(Rol role) { this.rol = role; }
+    public void setRol(Rol rol) { this.rol = rol; }
     public void setActivo(boolean activo) { this.activo = activo; }
     public void setFotoBase64(String fotoBase64) { this.fotoBase64 = fotoBase64; }
 }

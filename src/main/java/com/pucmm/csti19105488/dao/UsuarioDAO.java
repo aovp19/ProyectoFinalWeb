@@ -6,6 +6,7 @@ import com.pucmm.csti19105488.config.MongoConfig;
 import com.pucmm.csti19105488.model.Usuario;
 import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
+import dev.morphia.query.updates.UpdateOperators;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class UsuarioDAO implements RepositorioBase<Usuario>{
 
     @Override
     public void guardar(Usuario usuario) {
+        usuario.setActivo(true);
         datastore.save(usuario);
     }
 
@@ -35,9 +37,24 @@ public class UsuarioDAO implements RepositorioBase<Usuario>{
         return datastore.find(Usuario.class).iterator().toList();
     }
 
+    public List<Usuario> buscarActivos() {
+        return datastore.find(Usuario.class)
+                .filter(Filters.eq("activo", true))
+                .iterator().toList();
+    }
+
     @Override
-    public void actualizar(Usuario usuario) {
-        datastore.merge(usuario);
+    public void actualizar(Usuario usuario) {datastore.merge(usuario);}
+
+    public void actualizarActivo(ObjectId id, boolean activo) {
+        Usuario usuario = buscarPorId(id);
+        if (usuario != null) {
+            usuario.setActivo(activo);
+            datastore.save(usuario);
+        }
+        else{
+            throw new RuntimeException("Usuario no encontrado");
+        }
     }
 
     @Override

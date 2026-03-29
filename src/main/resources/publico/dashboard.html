@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encuestas PUCMM - Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/publico/css/estilos.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+
+    /* Burbujas de fondo */
+    .burbujas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .burbuja {
+      position: absolute;
+      bottom: -150px;
+      border-radius: 50%;
+      animation: flotar 8s infinite ease-in;
+      opacity: 0.1;
+    }
+
+    .burbuja:nth-child(1) { width: 80px; height: 80px; left: 10%; background: #7b2ff7; animation-duration: 7s; }
+    .burbuja:nth-child(2) { width: 120px; height: 120px; left: 25%; background: #4a90d9; animation-duration: 10s; animation-delay: 1s; }
+    .burbuja:nth-child(3) { width: 60px; height: 60px; left: 50%; background: #a855f7; animation-duration: 8s; animation-delay: 2s; }
+    .burbuja:nth-child(4) { width: 100px; height: 100px; left: 70%; background: #3b82f6; animation-duration: 12s; animation-delay: 0.5s; }
+    .burbuja:nth-child(5) { width: 50px; height: 50px; left: 85%; background: #8b5cf6; animation-duration: 9s; animation-delay: 3s; }
+
+    @keyframes flotar {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+      100% { transform: translateY(-110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Navbar */
+    .navbar-glass {
+      position: relative;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem 2rem;
+    }
+
+    .navbar-brand {
+      color: white !important;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.7) !important;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: white !important;
+    }
+
+    .btn-logout {
+      background: rgba(255, 100, 100, 0.2);
+      border: 1px solid rgba(255, 100, 100, 0.3);
+      color: #ff8fa3;
+      border-radius: 10px;
+      padding: 6px 16px;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background: rgba(255, 100, 100, 0.35);
+      color: white;
+    }
+
+    /* Contenido */
+    .contenido {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+    }
+
+    .bienvenida {
+      margin-bottom: 2rem;
+    }
+
+    .bienvenida h2 {
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+
+    .bienvenida p {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Tarjetas de acceso rápido */
+    .card-acceso {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 1.8rem;
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: white;
+      display: block;
+    }
+
+    .card-acceso:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+      color: white;
+    }
+
+    .card-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .icon-encuestas { background: linear-gradient(135deg, #7b2ff7, #4a90d9); }
+    .icon-usuarios { background: linear-gradient(135deg, #f7862f, #f7502f); }
+    .icon-mapa { background: linear-gradient(135deg, #2ff7a0, #2f9df7); }
+    .icon-nueva { background: linear-gradient(135deg, #f72ff7, #7b2ff7); }
+
+    .card-acceso h5 {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-acceso p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      margin: 0;
+    }
+
+    /* Solo admin */
+    .badge-admin {
+      background: rgba(247, 134, 47, 0.2);
+      border: 1px solid rgba(247, 134, 47, 0.4);
+      color: #f7a86f;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-left: 8px;
+    }
+
+    /* Stats */
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.2rem 1.5rem;
+      text-align: center;
+    }
+
+    .stat-numero {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #7b2ff7, #4a90d9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="burbujas">
+  <div class="burbuja"></div>
+  <div class="burbuja"></div>
+  <div class="burbuja"></div>
+  <div class="burbuja"></div>
+  <div class="burbuja"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar-glass d-flex justify-content-between align-items-center">
+  <div class="d-flex align-items-center gap-3">
+    <i class="bi bi-clipboard-data-fill fs-4"></i>
+    <span class="navbar-brand mb-0">Encuestas PUCMM</span>
+  </div>
+  <div class="d-flex align-items-center gap-3">
+    <span id="emailUsuario" class="text-white-50 small"></span>
+    <button class="btn-logout" onclick="cerrarSesion()">
+      <i class="bi bi-box-arrow-right me-1"></i>Salir
+    </button>
+  </div>
+</nav>
+
+<!-- Contenido -->
+<div class="contenido">
+
+  <!-- Bienvenida -->
+  <div class="bienvenida">
+    <h2>¡Bienvenido!</h2>
+    <p>Selecciona una opción para continuar</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4" id="statsContainer">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-numero" id="totalEncuestas">-</div>
+        <div class="stat-label">Total Encuestas</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-numero" id="encuestasSincronizadas">-</div>
+        <div class="stat-label">Sincronizadas</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-numero" id="encuestasPendientes">-</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-numero" id="totalUsuarios">-</div>
+        <div class="stat-label">Usuarios</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accesos rápidos -->
+  <div class="row g-3">
+
+    <div class="col-12 col-md-6">
+      <a href="/encuestas.html" class="card-acceso">
+        <div class="card-icon icon-encuestas">
+          <i class="bi bi-clipboard-check"></i>
+        </div>
+        <h5>Mis Encuestas</h5>
+        <p>Ver y gestionar tus encuestas registradas</p>
+      </a>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <a href="/nueva-encuesta.html" class="card-acceso">
+        <div class="card-icon icon-nueva">
+          <i class="bi bi-plus-circle"></i>
+        </div>
+        <h5>Nueva Encuesta</h5>
+        <p>Registrar una nueva encuesta en campo</p>
+      </a>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <a href="/mapa.html" class="card-acceso">
+        <div class="card-icon icon-mapa">
+          <i class="bi bi-map"></i>
+        </div>
+        <h5>Ver en Mapa</h5>
+        <p>Visualizar encuestas en el mapa</p>
+      </a>
+    </div>
+
+    <!-- Solo visible para admin -->
+    <div class="col-12 col-md-6" id="cardUsuarios" style="display:none">
+      <a href="/usuarios.html" class="card-acceso">
+        <div class="card-icon icon-usuarios">
+          <i class="bi bi-people"></i>
+        </div>
+        <h5>
+          Gestión de Usuarios
+          <span class="badge-admin">ADMIN</span>
+        </h5>
+        <p>Crear y administrar usuarios del sistema</p>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API_URL = "http://localhost:7000";
+  const token = localStorage.getItem("token");
+  const email = localStorage.getItem("email");
+  const rol = localStorage.getItem("rol");
+
+  // Si no hay token redirige al login
+  if (!token) window.location.href = "/index.html";
+
+  // Muestra el email del usuario
+  document.getElementById("emailUsuario").textContent = email;
+
+  // Muestra la tarjeta de usuarios si es admin
+  if (rol === "ADMIN") {
+    document.getElementById("cardUsuarios").style.display = "block";
+  }
+
+  // Carga las estadísticas
+  async function cargarStats() {
+    try {
+      const response = await fetch(`${API_URL}/encuestas`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const encuestas = await response.json();
+
+      document.getElementById("totalEncuestas").textContent = encuestas.length;
+      document.getElementById("encuestasSincronizadas").textContent =
+              encuestas.filter(e => e.sincronizado).length;
+      document.getElementById("encuestasPendientes").textContent =
+              encuestas.filter(e => !e.sincronizado).length;
+
+    } catch (error) {
+      console.error("Error cargando stats:", error);
+    }
+  }
+
+  async function cargarTotalUsuarios() {
+    if (rol !== "ADMIN") return;
+    try {
+      const response = await fetch(`${API_URL}/usuarios`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const usuarios = await response.json();
+      document.getElementById("totalUsuarios").textContent = usuarios.length;
+    } catch (error) {
+      console.error("Error cargando usuarios:", error);
+    }
+  }
+
+  function cerrarSesion() {
+    localStorage.clear();
+    window.location.href = "/index.html";
+  }
+
+  cargarStats();
+  cargarTotalUsuarios();
+</script>
+</body>
+</html>

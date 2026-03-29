@@ -5,7 +5,6 @@ import com.pucmm.csti19105488.model.Rol;
 import com.pucmm.csti19105488.model.Usuario;
 import org.bson.types.ObjectId;
 
-import javax.management.relation.Role;
 import java.util.List;
 
 public class UsuarioService {
@@ -37,28 +36,55 @@ public class UsuarioService {
         return usuario;
     }
 
-    public List<Usuario> listarUsuarios(){
-        return usuarioDAO.buscarTodos();
-    }
+    public List<Usuario> listarUsuariosActivos(){ return usuarioDAO.buscarActivos(); }
+
+    public List<Usuario> listarTodos() { return usuarioDAO.buscarTodos();}
 
     public Usuario buscarPorId (ObjectId id){
         return usuarioDAO.buscarPorId(id);
     }
 
-    public void actualizarUsuario(Usuario usuario){
-        usuarioDAO.actualizar(usuario);
+    public void actualizarUsuario(Usuario usuarioActualizado) {
+        System.out.println("Usuario recibido - activo: " + usuarioActualizado.isActivo());
+        System.out.println("Usuario recibido - id: " + usuarioActualizado.getId());
+
+        Usuario usuarioExistente = usuarioDAO.buscarPorId(new ObjectId(usuarioActualizado.getId()));
+        System.out.println("Usuario existente - activo: " + usuarioExistente.isActivo());
+
+        if (usuarioExistente == null) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+
+        if (usuarioExistente.getRol() == Rol.ADMIN &&
+                usuarioActualizado.getRol() != Rol.ADMIN) {
+            throw new RuntimeException("No se puede cambiar el rol de un administrador");
+        }
+
+        usuarioActualizado.setActivo(usuarioExistente.isActivo());
+        System.out.println("Antes de guardar - activo: " + usuarioActualizado.isActivo());
+        usuarioDAO.actualizar(usuarioActualizado);
+
+        Usuario verificar = usuarioDAO.buscarPorId(new ObjectId(usuarioActualizado.getId()));
+        System.out.println("Despues de guardar - activo: " + verificar.isActivo());
     }
 
-    public void eliminarUsuario(ObjectId id){
-        Usuario usuario = buscarPorId(id);
+    public void activarUsuario(ObjectId id) {
+        Usuario usuario = usuarioDAO.buscarPorId(id);
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        usuarioDAO.actualizarActivo(id, true);
+    }
+
+    public void eliminarUsuario(ObjectId id) {
+        Usuario usuario = usuarioDAO.buscarPorId(id);
         if (usuario == null) {
             throw new RuntimeException("Usuario no encontrado");
         }
         if (usuario.getRol() == Rol.ADMIN) {
-            throw new RuntimeException("No se puede eliminar un administrador");
+            throw new RuntimeException("No se puede eliminar un usuario con rol ADMIN");
         }
-        usuarioDAO.eliminar(id);
+        // En vez de eliminar, desactiva
+        usuarioDAO.actualizarActivo(id, false);
     }
-
-
 }

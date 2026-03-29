@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuestas PUCMM - Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/estilos.css">
+    <style>
+        .contenido { position: relative; z-index: 1; padding: 2rem; }
+
+        .card-acceso {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
+
+        .offcanvas {
+            background: #1e1b4b !important;
+            border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .offcanvas-title { color: white; font-weight: 600; }
+        .offcanvas-header { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-close { filter: invert(1); }
+
+        .modal-glass .modal-content {
+            background: #1e1b4b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            color: white;
+        }
+
+        .modal-glass .modal-header { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .modal-glass .modal-footer { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+
+        .table-glass > tbody > tr > td {
+            background-color: transparent !important;
+            color: white !important;
+        }
+
+        .table-glass > tbody > tr {
+            background-color: transparent !important;
+        }
+
+        /* Dropdown tres puntos */
+        .dropdown-menu-glass {
+            background: #1e1b4b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 6px;
+        }
+
+        .dropdown-menu-glass .dropdown-item {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .dropdown-menu-glass .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .dropdown-menu-glass .dropdown-item.text-danger-glass {
+            color: #ff8fa3;
+        }
+
+        .dropdown-menu-glass .dropdown-item.text-danger-glass:hover {
+            background: rgba(255, 100, 100, 0.15);
+        }
+
+        .dropdown-menu-glass .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-tres-puntos {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            border-radius: 8px;
+            padding: 4px 10px;
+            transition: all 0.2s;
+        }
+
+        .btn-tres-puntos:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        /* Toggle switch */
+        .form-check-input:checked {
+            background-color: #7b2ff7;
+            border-color: #7b2ff7;
+        }
+
+        /* Fila inactiva */
+        .fila-inactiva { opacity: 0.5; }
+
+        .badge-inactivo {
+            background: rgba(255, 100, 100, 0.2);
+            border: 1px solid rgba(255, 100, 100, 0.4);
+            color: #ff8fa3;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="burbujas">
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar-glass d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/dashboard.html" class="text-white text-decoration-none">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <i class="bi bi-people-fill fs-4"></i>
+        <span class="navbar-brand mb-0">Gestión de Usuarios</span>
+    </div>
+    <button class="btn-logout" onclick="cerrarSesion()">
+        <i class="bi bi-box-arrow-right me-1"></i>Salir
+    </button>
+</nav>
+
+<div class="contenido">
+
+    <!-- Alertas -->
+    <div id="alerta" class="alert alert-glass-danger d-none mb-3">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        <span id="mensajeAlerta"></span>
+    </div>
+    <div id="alertaExito" class="alert alert-glass-success d-none mb-3">
+        <i class="bi bi-check-circle me-2"></i>
+        <span id="mensajeExito"></span>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h4 class="mb-0">Usuarios del sistema</h4>
+        <div class="d-flex align-items-center gap-3">
+            <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+                <input class="form-check-input" type="checkbox" id="toggleActivos"
+                       checked onchange="cargarUsuarios()">
+                <label class="form-check-label text-white-50 small" for="toggleActivos">
+                    Solo activos
+                </label>
+            </div>
+            <button class="btn-primary-glass" onclick="abrirPanelCrear()">
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Usuario
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card-acceso">
+        <div class="table-responsive">
+            <table class="table table-glass mb-0">
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th class="d-none d-md-table-cell">Apellido</th>
+                    <th class="d-none d-md-table-cell">Email</th>
+                    <th>Rol</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tablaUsuarios">
+                <tr>
+                    <td colspan="5" class="text-center text-white-50">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Cargando...
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Offcanvas Crear/Editar -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="panelUsuario">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="tituloPanel">Nuevo Usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <input type="hidden" id="activoUsuario">
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" placeholder="Nombre">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-control" id="apellido" placeholder="Apellido">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="emailUsuario" placeholder="correo@ce.pucmm.edu.do">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="passwordUsuario" placeholder="••••••••">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Rol</label>
+            <select class="form-select" id="rolUsuario">
+                <option value="ADMIN">Administrador</option>
+                <option value="ENCUESTADOR">Encuestador</option>
+            </select>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn-primary-glass w-100" onclick="guardarUsuario()">
+                <i class="bi bi-save me-2"></i>Guardar
+            </button>
+            <button class="btn-danger-glass" data-bs-dismiss="offcanvas">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal fade modal-glass" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar desactivación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white-50">¿Estás seguro que deseas desactivar este usuario? Podrás reactivarlo más adelante.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-danger-glass" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-primary-glass" onclick="confirmarEliminar()">
+                    <i class="bi bi-person-dash me-2"></i>Desactivar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_URL = "http://localhost:7000";
+    const token = localStorage.getItem("token");
+    const rol = localStorage.getItem("rol");
+
+    if (!token) window.location.href = "/index.html";
+    if (rol !== "ADMIN") window.location.href = "/dashboard.html";
+
+    let usuarioIdEliminar = null;
+    let modoEdicion = false;
+
+    async function cargarUsuarios() {
+        try {
+            const soloActivos = document.getElementById("toggleActivos").checked;
+            const url = soloActivos ? `${API_URL}/usuarios` : `${API_URL}/usuarios/todos`;
+
+            const response = await fetch(url, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const usuarios = await response.json();
+            renderTabla(usuarios);
+        } catch (error) {
+            mostrarError("Error al cargar usuarios");
+        }
+    }
+
+    function renderTabla(usuarios) {
+        const tbody = document.getElementById("tablaUsuarios");
+        if (usuarios.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-white-50">No hay usuarios registrados</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = usuarios.map(u => `
+            <tr class="${!u.activo ? 'fila-inactiva' : ''}">
+                <td>
+                    ${u.nombre}
+                    ${!u.activo ? '<span class="badge-inactivo">Inactivo</span>' : ''}
+                </td>
+                <td class="d-none d-md-table-cell">${u.apellido}</td>
+                <td class="d-none d-md-table-cell">${u.email}</td>
+                <td>
+                    <span class="badge-rol ${u.rol === 'ADMIN' ? 'badge-admin-rol' : 'badge-encuestador-rol'}">
+                        ${u.rol}
+                    </span>
+                </td>
+                <td class="text-end">
+                    <div class="dropdown">
+                        <button class="btn-tres-puntos dropdown-toggle-split"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-glass dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#"
+                                   onclick="abrirPanelEditar(${JSON.stringify(u).replace(/"/g, '&quot;')})">
+                                    <i class="bi bi-pencil me-2"></i>Editar
+                                </a>
+                            </li>
+                            ${u.rol !== 'ADMIN' ? `
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger-glass" href="#"
+                                   onclick="${u.activo ? `abrirModalEliminar('${u.id}')` : `activarUsuario('${u.id}')`}">
+                                    <i class="bi ${u.activo ? 'bi-person-dash' : 'bi-person-check'} me-2"></i>
+                                    ${u.activo ? 'Desactivar' : 'Activar'}
+                                </a>
+                            </li>` : ''}
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function abrirPanelCrear() {
+        modoEdicion = false;
+        document.getElementById("tituloPanel").textContent = "Nuevo Usuario";
+        document.getElementById("usuarioId").value = "";
+        document.getElementById("nombre").value = "";
+        document.getElementById("apellido").value = "";
+        document.getElementById("emailUsuario").value = "";
+        document.getElementById("passwordUsuario").value = "";
+        document.getElementById("rolUsuario").value = "ENCUESTADOR";
+        document.getElementById("rolUsuario").disabled = false;
+        new bootstrap.Offcanvas(document.getElementById("panelUsuario")).show();
+    }
+
+    function abrirPanelEditar(usuario) {
+        modoEdicion = true;
+        document.getElementById("tituloPanel").textContent = "Editar Usuario";
+        document.getElementById("usuarioId").value = usuario.id;
+        document.getElementById("nombre").value = usuario.nombre;
+        document.getElementById("apellido").value = usuario.apellido;
+        document.getElementById("emailUsuario").value = usuario.email;
+        document.getElementById("passwordUsuario").value = "";
+        document.getElementById("rolUsuario").value = usuario.rol;
+        document.getElementById("rolUsuario").disabled = usuario.rol === "ADMIN";
+        document.getElementById("activoUsuario").value = usuario.activo;
+        new bootstrap.Offcanvas(document.getElementById("panelUsuario")).show();
+    }
+
+    async function guardarUsuario() {
+        const id = document.getElementById("usuarioId").value;
+        const usuario = {
+            nombre: document.getElementById("nombre").value,
+            apellido: document.getElementById("apellido").value,
+            email: document.getElementById("emailUsuario").value,
+            password: document.getElementById("passwordUsuario").value,
+            rol: document.getElementById("rolUsuario").value,
+            activo: document.getElementById("activoUsuario").value === "true"
+        };
+
+        console.log("Usuario a guardar:", usuario); // ← agrega esto
+        console.log("Activo value:", document.getElementById("activoUsuario").value); // ← y esto
+
+        try {
+            const url = modoEdicion ? `${API_URL}/usuarios/${id}` : `${API_URL}/usuarios`;
+            const method = modoEdicion ? "PUT" : "POST";
+
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(usuario)
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            bootstrap.Offcanvas.getInstance(document.getElementById("panelUsuario")).hide();
+            mostrarExito(modoEdicion ? "Usuario actualizado exitosamente" : "Usuario creado exitosamente");
+            cargarUsuarios();
+
+        } catch (error) {
+            mostrarError("Error al guardar usuario");
+        }
+    }
+
+    async function activarUsuario(id) {
+        try {
+            const response = await fetch(`${API_URL}/usuarios/${id}/activar`, {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            mostrarExito("Usuario activado exitosamente");
+            cargarUsuarios();
+
+        } catch (error) {
+            mostrarError("Error al activar usuario");
+        }
+    }
+
+    function abrirModalEliminar(id) {
+        usuarioIdEliminar = id;
+        new bootstrap.Modal(document.getElementById("modalEliminar")).show();
+    }
+
+    async function confirmarEliminar() {
+        try {
+            const response = await fetch(`${API_URL}/usuarios/${usuarioIdEliminar}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
+            mostrarExito("Usuario desactivado exitosamente");
+            cargarUsuarios();
+
+        } catch (error) {
+            mostrarError("Error al desactivar usuario");
+        }
+    }
+
+    function mostrarError(mensaje) {
+        const alerta = document.getElementById("alerta");
+        document.getElementById("mensajeAlerta").textContent = mensaje;
+        alerta.classList.remove("d-none");
+        setTimeout(() => alerta.classList.add("d-none"), 4000);
+    }
+
+    function mostrarExito(mensaje) {
+        const alerta = document.getElementById("alertaExito");
+        document.getElementById("mensajeExito").textContent = mensaje;
+        alerta.classList.remove("d-none");
+        setTimeout(() => alerta.classList.add("d-none"), 4000);
+    }
+
+    function cerrarSesion() {
+        localStorage.clear();
+        window.location.href = "/index.html";
+    }
+
+    cargarUsuarios();
+</script>
+</body>
+</html>
