@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="/js/db.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Encuestas PUCMM - Usuarios</title>
@@ -280,7 +281,14 @@
             const usuarios = await response.json();
             renderTabla(usuarios);
         } catch (error) {
-            mostrarError("Error al cargar usuarios");
+            const tbody = document.getElementById("tablaUsuarios");
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-white-50 py-4">
+                        <i class="bi bi-wifi-off fs-4 d-block mb-2"></i>
+                        Sin conexión - Los usuarios no están disponibles offline
+                    </td>
+                </tr>`;
         }
     }
 

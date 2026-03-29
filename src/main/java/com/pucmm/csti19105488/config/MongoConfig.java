@@ -12,6 +12,7 @@ public class MongoConfig {
 
     private static MongoConfig instancia;
     private Datastore datastore;
+    private MongoClient mongoClient;
 
     private MongoConfig() {
         try {
@@ -24,6 +25,13 @@ public class MongoConfig {
 
             // Se crea el Datastore de Morphia
             this.datastore = Morphia.createDatastore(mongoClient, props.getProperty("mongo.database"));
+
+            // Cerrar la conexion al apagar la aplicacion
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                this.mongoClient.close();
+                System.out.println("Conexion a MongoDB cerrada correctamente.");
+            }));
+
 
         }   catch (IOException e) {
             throw new RuntimeException("Error al cargar config.properties", e);

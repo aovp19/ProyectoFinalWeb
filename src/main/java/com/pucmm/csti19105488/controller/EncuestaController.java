@@ -20,6 +20,13 @@ public class EncuestaController {
             // Crear encuesta
             post( ctx -> {
                 Encuesta encuesta = ctx.bodyAsClass(Encuesta.class);
+
+                // Toma el email del token JWT
+                String email = ctx.attribute("email");
+                Usuario encuestador = usuarioService.buscarPorEmail(email);
+                encuesta.setEncuestador(encuestador);
+                encuesta.setSincronizado(true);
+
                 encuestaService.crearEncuesta(encuesta);
                 ctx.status(201).json("Encuesta creada exitosamente");
             });

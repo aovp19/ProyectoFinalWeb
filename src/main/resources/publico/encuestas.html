@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="/js/db.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Encuestas PUCMM - Mis Encuestas</title>
@@ -238,7 +239,7 @@
             <select class="form-select" id="educacion">
                 <option value="BASICO">Básico</option>
                 <option value="MEDIO">Medio</option>
-                <option value="UNIVERSITARIO">Grado Universitario</option>
+                <option value="GRADO">Grado Universitario</option>
                 <option value="POSTGRADO">Postgrado</option>
                 <option value="DOCTORADO">Doctorado</option>
             </select>
@@ -330,6 +331,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     const API_URL = "http://localhost:7000";
     const token = localStorage.getItem("token");
@@ -344,13 +346,30 @@
 
     async function cargarEncuestas() {
         try {
-            const response = await fetch(`${API_URL}/encuestas`, {
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            const encuestas = await response.json();
+            let encuestas = [];
+
+            if (estaOnline()) {
+                // Online: cargar del servidor
+                const response = await fetch(`${API_URL}/encuestas`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                encuestas = await response.json();
+            }
+
+            // Siempre cargar las locales pendientes
+            await inicializarDB();
+            const locales = await obtenerEncuestasLocales();
+
+            // Agregar las locales que no estén en el servidor
+            const localesPendientes = locales.filter(l => !l.sincronizado);
+            encuestas = [...encuestas, ...localesPendientes];
+
             renderTabla(encuestas);
         } catch (error) {
-            mostrarError("Error al cargar encuestas");
+            // Si falla el servidor, mostrar solo las locales
+            await inicializarDB();
+            const locales = await obtenerEncuestasLocales();
+            renderTabla(locales);
         }
     }
 
@@ -380,20 +399,25 @@
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-glass dropdown-menu-end">
+                            ${!e.sincronizado ? `
                             <li>
                                 <a class="dropdown-item" href="#"
                                    onclick="abrirPanelEditar(${JSON.stringify(e).replace(/"/g, '&quot;')})">
                                     <i class="bi bi-pencil me-2"></i>Editar
                                 </a>
                             </li>
-                            ${!e.sincronizado ? `
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item text-danger-glass" href="#"
                                    onclick="abrirModalEliminar('${e.id}')">
                                     <i class="bi bi-trash me-2"></i>Eliminar
                                 </a>
-                            </li>` : ''}
+                            </li>` : `
+                            <li>
+                                <span class="dropdown-item text-white-50 small">
+                                    <i class="bi bi-lock me-2"></i>Solo lectura
+                                </span>
+                            </li>`}
                         </ul>
                     </div>
                 </td>
@@ -448,13 +472,34 @@
             sector: document.getElementById("sector").value,
             educacion: document.getElementById("educacion").value,
             fotoBase64: fotoBase64,
-            sincronizado: false,
+            sincronizado: true,
             ubicacion: latitud && longitud ? {
                 latitud: parseFloat(latitud),
                 longitud: parseFloat(longitud)
             } : null
         };
 
+        //Si la sesion esta offline guardar localmente
+        if(!estaOnline()){
+            try {
+                if(modoEdicion){
+                    const encuestaActualizada = { ...encuesta, id: Number (id)};
+                    await actualizarEncuestaLocal(encuestaActualizada);
+                    mostrarExito("Encuesta actualizada localmente");
+                } else {
+                    // Crear una nueva encuesta con un id generado por IndexedDB
+                    await guardarEncuestaLocal(encuesta);
+                    mostrarExito("Sin conexión - Encuesta creada localmente");
+                }
+                bootstrap.Offcanvas.getInstance(document.getElementById("panelEncuesta")).hide();
+                cargarEncuestas();
+            } catch (error) {
+                mostrarError("Error al guardar encuesta localmente");
+            }
+            return;
+        }
+
+        // Si esta online guardar en el servidor
         try {
             const url = modoEdicion ? `${API_URL}/encuestas/${id}` : `${API_URL}/encuestas`;
             const method = modoEdicion ? "PUT" : "POST";
@@ -484,7 +529,11 @@
             cargarEncuestas();
 
         } catch (error) {
-            mostrarError("Error al guardar encuesta");
+            // Si falla al subir al servidor, guardar de manera local
+            await guardarEncuestaLocal(encuesta);
+            bootstrap.Offcanvas.getInstance(document.getElementById("panelEncuesta")).hide();
+            mostrarExito("Error de conexión - Encuesta guardada localmente");
+            cargarEncuestas();
         }
     }
 
@@ -502,22 +551,22 @@
         reader.readAsDataURL(file);
     }
 
-    let webcam = null;
-
     function mostrarCamara() {
         document.getElementById("seccionCamara").style.display = "block";
-
-        const videoEl = document.getElementById("webcam");
-        webcam = new Webcam(videoEl, "user", document.getElementById("canvas"));
-        webcam.start()
-            .then(() => console.log("Cámara iniciada"))
+        const video = document.getElementById("webcam");
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => {
+                video.srcObject = stream;
+                video._stream = stream;
+            })
             .catch(err => mostrarError("No se pudo acceder a la cámara: " + err));
     }
 
     function cerrarCamara() {
-        if (webcam) {
-            webcam.stop();
-            webcam = null;
+        const video = document.getElementById("webcam");
+        if (video._stream) {
+            video._stream.getTracks().forEach(t => t.stop());
+            video._stream = null;
         }
         document.getElementById("seccionCamara").style.display = "none";
     }
@@ -528,11 +577,15 @@
     }
 
     function tomarFoto() {
-        if (!webcam) return;
-        const picture = webcam.snap();
-        fotoBase64 = picture.split(",")[1];
+        const video = document.getElementById("webcam");
+        const canvas = document.getElementById("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL("image/jpeg");
+        fotoBase64 = dataUrl.split(",")[1];
         const preview = document.getElementById("previewFoto");
-        preview.src = picture;
+        preview.src = dataUrl;
         preview.style.display = "block";
         mostrarExito("Foto tomada exitosamente");
     }
@@ -561,6 +614,21 @@
     }
 
     async function confirmarEliminar() {
+        // Si el id es número, es local (IndexedDB usa números)
+        // Si es string tipo "abc123...", es del servidor (MongoDB ObjectId)
+        const esLocal = typeof encuestaIdEliminar === "number" ||
+            !isNaN(encuestaIdEliminar);
+
+        if (!estaOnline() || esLocal) {
+            // Eliminar de IndexedDB
+            await eliminarEncuestaLocal(Number(encuestaIdEliminar));
+            bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
+            mostrarExito("Encuesta eliminada localmente");
+            cargarEncuestas();
+            return;
+        }
+
+        // Si está online y es del servidor, eliminar del servidor
         try {
             const response = await fetch(`${API_URL}/encuestas/${encuestaIdEliminar}`, {
                 method: "DELETE",
@@ -601,8 +669,65 @@
         window.location.href = "/index.html";
     }
 
-    cargarEncuestas();
+    // Sincronizar cuando vuelve la conexión
+    window.addEventListener("online", async () => {
+        mostrarExito("Conexión restaurada - Sincronizando...");
+        await sincronizarPendientes();
+    });
+
+    async function sincronizarPendientes() {
+        await inicializarDB();
+        const pendientes = await obtenerEncuestasPendientes();
+
+        if (pendientes.length === 0) return;
+
+        let sincronizadas = 0;
+        for (const encuesta of pendientes) {
+            try {
+                const encuestaServidor = {
+                    nombreEncuestado: encuesta.nombreEncuestado,
+                    apellidoEncuestado: encuesta.apellidoEncuestado,
+                    sector: encuesta.sector,
+                    educacion: encuesta.educacion,
+                    fotoBase64: encuesta.fotoBase64,
+                    ubicacion: encuesta.ubicacion,
+                    sincronizado: true
+
+                };
+                const response = await fetch(`${API_URL}/encuestas`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(encuestaServidor)
+                });
+
+                if (response.ok) {
+                    await eliminarEncuestaLocal(encuesta.id);
+                    sincronizadas++;
+                }
+            } catch (error) {
+                console.error("Error sincronizando encuesta:", error);
+            }
+        }
+
+        if (sincronizadas > 0) {
+            mostrarExito(`${sincronizadas} encuesta(s) sincronizada(s) exitosamente`);
+            cargarEncuestas();
+        }
+    }
+
+    // Al cargar la página, si hay conexión sincroniza automáticamente
+    async function iniciar() {
+        await inicializarDB();
+        if (estaOnline()) {
+            await sincronizarPendientes();
+        }
+        cargarEncuestas();
+    }
+
+    iniciar();
 </script>
-<script src="https://unpkg.com/webcam-easy/dist/webcam-easy.min.js"></script>
 </body>
 </html>

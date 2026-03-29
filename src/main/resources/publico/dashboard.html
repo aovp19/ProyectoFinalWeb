@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <script src="/js/db.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Encuestas PUCMM - Dashboard</title>
@@ -303,13 +304,17 @@
   const API_URL = "http://localhost:7000";
   const token = localStorage.getItem("token");
   const email = localStorage.getItem("email");
+  const nombre = localStorage.getItem("nombre");
+  const apellido = localStorage.getItem("apellido");
   const rol = localStorage.getItem("rol");
 
   // Si no hay token redirige al login
   if (!token) window.location.href = "/index.html";
 
-  // Muestra el email del usuario
-  document.getElementById("emailUsuario").textContent = email;
+  // Muestra el Nombre y Apellido del usuario
+  // Por si acaso si falla el nombre y apellido si se muestra el email
+  document.getElementById("emailUsuario").textContent =
+          (nombre && apellido) ? `${nombre} ${apellido}` : email;
 
   // Muestra la tarjeta de usuarios si es admin
   if (rol === "ADMIN") {
@@ -331,7 +336,14 @@
               encuestas.filter(e => !e.sincronizado).length;
 
     } catch (error) {
-      console.error("Error cargando stats:", error);
+      // Offline: carga desde IndexedDB
+      await inicializarDB();
+      const locales = await obtenerEncuestasLocales();
+      document.getElementById("totalEncuestas").textContent = locales.length;
+      document.getElementById("encuestasSincronizadas").textContent =
+              locales.filter(e => e.sincronizado).length;
+      document.getElementById("encuestasPendientes").textContent =
+              locales.filter(e => !e.sincronizado).length;
     }
   }
 

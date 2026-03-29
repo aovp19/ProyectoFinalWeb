@@ -9,6 +9,7 @@ import org.bson.types.ObjectId;
 import java.time.LocalDateTime;
 
 @Entity("encuestas")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true) // para que el json inore campos desconocidos y no de error
 public class Encuesta {
 
     @Id

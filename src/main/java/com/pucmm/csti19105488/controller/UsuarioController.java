@@ -65,7 +65,12 @@ public class UsuarioController {
            Usuario usuario = ctx.bodyAsClass(Usuario.class);
            Usuario autenticado = usuarioService.autenticar(usuario.getEmail(), usuario.getPassword());
            String token = JwtUtil.generarToken(autenticado);
-           ctx.status(200).json(Map.of("token", token, "rol", autenticado.getRol().toString()));
+           ctx.status(200).json(Map.of(
+                   "token", token,
+                   "rol", autenticado.getRol().toString(),
+                   "nombre", autenticado.getNombre(),
+                   "apellido", autenticado.getApellido(),
+                   "id", autenticado.getId().toString()));
        });
     }
 }

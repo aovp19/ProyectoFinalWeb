@@ -87,4 +87,8 @@ public class UsuarioService {
         // En vez de eliminar, desactiva
         usuarioDAO.actualizarActivo(id, false);
     }
+
+    public Usuario buscarPorEmail(String email) {
+        return usuarioDAO.buscarPorEmail(email);
+    }
 }
