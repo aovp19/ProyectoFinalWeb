@@ -725,6 +725,11 @@
             await sincronizarPendientes();
         }
         cargarEncuestas();
+
+        const params = new URLSearchParams(window.location.search);
+        if(params.get("nuevo") === "true"){
+            abrirPanelCrear();
+        }
     }
 
     iniciar();
