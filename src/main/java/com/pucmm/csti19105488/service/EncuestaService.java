@@ -22,6 +22,7 @@ public class EncuestaService {
                 throw new RuntimeException("Ya existe una encuesta registrada con la cédula " + encuesta.getCedula());
             }
         }
+        encuesta.setEncuestador(encuesta.getEncuestador());
         encuestaDAO.guardar(encuesta);
     }
 
@@ -62,7 +63,7 @@ public class EncuestaService {
     }
 
 
-    public Object listarEncuestasPorUsuario(Usuario usuario) {
+    public List<Encuesta> listarEncuestasPorUsuario(Usuario usuario) {
         return encuestaDAO.buscarPorEncuestador(usuario);
     }
 }

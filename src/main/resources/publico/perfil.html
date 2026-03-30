@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="/js/db.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuestas PUCMM - Mi Perfil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/estilos.css">
+    <script src="/js/base.js"></script>
+    <style>
+        :root {
+            --cream: #FAF8F4;
+            --ink: #1A1714;
+            --ink-light: #6B6560;
+            --ink-lighter: #B8B3AE;
+            --accent: #2B5BDB;
+            --accent-light: #E8EEFF;
+            --accent-dark: #1A3A9E;
+            --success: #1A7A4A;
+            --success-bg: #E8F5EE;
+            --warning: #B85C00;
+            --warning-bg: #FFF3E8;
+            --danger: #A32D2D;
+            --danger-bg: #FCEBEB;
+            --border: #E5E1DB;
+            --surface: #FFFFFF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        .app-shell { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 220px;
+            background: var(--ink);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .main {
+            flex: 1;
+            margin-left: 220px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 0.5px solid var(--border);
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-title { font-size: 16px; font-weight: 600; color: var(--ink); }
+        .topbar-sub   { font-size: 12px; color: var(--ink-light); }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            background: transparent;
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--ink-light);
+            cursor: pointer;
+            transition: all .15s;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .btn-back:hover { background: var(--cream); color: var(--ink); }
+
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(163,45,45,0.08);
+            border: 0.5px solid rgba(163,45,45,0.2);
+            color: var(--danger);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .2s;
+        }
+
+        .btn-logout:hover { background: var(--danger-bg); }
+
+        .page-body {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .perfil-wrap {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ── AVATAR CARD ── */
+        .avatar-card {
+            background: var(--surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar-circle {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .avatar-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 3px;
+        }
+
+        .avatar-info p {
+            font-size: 12px;
+            color: var(--ink-light);
+            margin: 0;
+        }
+
+        .badge-rol {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-top: 4px;
+        }
+
+        .badge-admin-rol {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .badge-encuestador-rol {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        /* ── FORM CARD ── */
+        .form-card {
+            background: var(--surface);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .form-card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 0.5px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-card-header i { color: var(--ink-light); }
+
+        .form-card-body { padding: 1.25rem; }
+
+        .form-card-footer {
+            padding: 1rem 1.25rem;
+            border-top: 0.5px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .section-divider {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--ink-lighter);
+            font-weight: 500;
+            margin: 1.25rem 0 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 0.5px;
+            background: var(--border);
+        }
+
+        .form-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-control, .form-select {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--ink);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            transition: border .2s, box-shadow .2s;
+            width: 100%;
+            padding: 9px 12px;
+        }
+
+        .form-control:focus {
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(43,91,219,0.08);
+            outline: none;
+        }
+
+        .form-control[readonly] {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-control::placeholder { color: var(--ink-lighter); }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--ink-lighter);
+            margin-top: 4px;
+        }
+
+        .alert-glass-danger {
+            background: var(--danger-bg);
+            border: 0.5px solid rgba(163,45,45,0.25);
+            color: var(--danger);
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-glass-success {
+            background: var(--success-bg);
+            border: 0.5px solid rgba(26,122,74,0.25);
+            color: var(--success);
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary-glass {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .2s;
+        }
+
+        .btn-primary-glass:hover { background: var(--accent-dark); }
+
+        .btn-secondary-glass {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--ink);
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .2s;
+        }
+
+        .btn-secondary-glass:hover { background: var(--cream); }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .row-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div class="sidebar"></div>
+
+    <div class="main">
+
+        <div class="topbar">
+            <div class="topbar-left">
+                <a href="/dashboard.html" class="btn-back">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div>
+                    <div class="topbar-title">Mi perfil</div>
+                    <div class="topbar-sub">Información de tu cuenta</div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="cerrarSesion()">
+                <i class="bi bi-box-arrow-right"></i>Salir
+            </button>
+        </div>
+
+        <div class="page-body">
+            <div class="perfil-wrap">
+
+                <!-- Alertas -->
+                <div id="alerta" class="alert-glass-danger d-none">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <span id="mensajeAlerta"></span>
+                </div>
+                <div id="alertaExito" class="alert-glass-success d-none">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span id="mensajeExito"></span>
+                </div>
+
+                <!-- Avatar card -->
+                <div class="avatar-card">
+                    <div class="avatar-circle" id="avatarCircle">?</div>
+                    <div class="avatar-info">
+                        <h3 id="avatarNombre">Cargando...</h3>
+                        <p id="avatarEmail"></p>
+                        <span class="badge-rol" id="avatarRol"></span>
+                    </div>
+                </div>
+
+                <!-- Datos personales — oculto para admin -->
+                <div class="form-card" id="seccionDatos">
+                    <div class="form-card-header">
+                        <i class="bi bi-person"></i>
+                        Datos personales
+                    </div>
+                    <div class="form-card-body">
+                        <div class="row-2 mb-3">
+                            <div>
+                                <label class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="nombre" placeholder="Nombre">
+                            </div>
+                            <div>
+                                <label class="form-label">Apellido</label>
+                                <input type="text" class="form-control" id="apellido" placeholder="Apellido">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="email" readonly>
+                            <p class="hint">El correo no puede ser modificado.</p>
+                        </div>
+                    </div>
+                    <div class="form-card-footer">
+                        <button class="btn-primary-glass" onclick="guardarDatos()">
+                            <i class="bi bi-save"></i>Guardar cambios
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cambiar contraseña -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="bi bi-lock"></i>
+                        Cambiar contraseña
+                    </div>
+                    <div class="form-card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nueva contraseña</label>
+                            <input type="password" class="form-control" id="passwordNueva" placeholder="Mínimo 5 caracteres con letras y números">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar contraseña</label>
+                            <input type="password" class="form-control" id="passwordConfirmar" placeholder="Repite la nueva contraseña">
+                        </div>
+                    </div>
+                    <div class="form-card-footer">
+                        <button class="btn-primary-glass" onclick="cambiarPassword()">
+                            <i class="bi bi-key"></i>Cambiar contraseña
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_URL = "http://localhost:7000";
+    const token   = localStorage.getItem("token");
+    const userId  = localStorage.getItem("userId");
+    const rol     = localStorage.getItem("rol");
+
+    if (!token) window.location.href = "/index.html";
+
+    // Admin no puede editar datos personales, solo contraseña
+    if (rol === "ADMIN") {
+        document.getElementById("seccionDatos").style.display = "none";
+    }
+
+    async function cargarPerfil() {
+        try {
+            const response = await fetch(`${API_URL}/usuarios/${userId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error("No se pudo cargar el perfil");
+
+            const usuario = await response.json();
+
+            // Avatar
+            const iniciales = (usuario.nombre[0] + usuario.apellido[0]).toUpperCase();
+            document.getElementById("avatarCircle").textContent = iniciales;
+            document.getElementById("avatarNombre").textContent = `${usuario.nombre} ${usuario.apellido}`;
+            document.getElementById("avatarEmail").textContent  = usuario.email;
+
+            const badgeRol = document.getElementById("avatarRol");
+            if (usuario.rol === "ADMIN") {
+                badgeRol.textContent = "Administrador";
+                badgeRol.className = "badge-rol badge-admin-rol";
+            } else {
+                badgeRol.textContent = "Encuestador";
+                badgeRol.className = "badge-rol badge-encuestador-rol";
+            }
+
+            // Formulario datos personales
+            document.getElementById("nombre").value  = usuario.nombre;
+            document.getElementById("apellido").value = usuario.apellido;
+            document.getElementById("email").value   = usuario.email;
+
+        } catch (error) {
+            mostrarError("No se pudo cargar la información del perfil");
+        }
+    }
+
+    async function guardarDatos() {
+        const nombre   = document.getElementById("nombre").value.trim();
+        const apellido = document.getElementById("apellido").value.trim();
+
+        if (!nombre || !apellido) {
+            mostrarError("El nombre y apellido son obligatorios");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/usuarios/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    nombre,
+                    apellido,
+                    email: document.getElementById("email").value,
+                    password: "",
+                    rol: rol,
+                    activo: true
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            // Actualizar localStorage para que el sidebar se actualice
+            localStorage.setItem("nombre", nombre);
+            localStorage.setItem("apellido", apellido);
+
+            mostrarExito("Datos actualizados exitosamente");
+
+            // Recargar sidebar con los nuevos datos
+            document.querySelector(".sidebar").innerHTML = "";
+            location.reload();
+
+        } catch (error) {
+            mostrarError("Error al actualizar los datos");
+        }
+    }
+
+    async function cambiarPassword() {
+        const nueva     = document.getElementById("passwordNueva").value;
+        const confirmar = document.getElementById("passwordConfirmar").value;
+
+        // Validar mínimo 5 caracteres
+        if (nueva.length < 5) {
+            mostrarError("La contraseña debe tener al menos 5 caracteres");
+            return;
+        }
+
+        // Validar que tenga letras y números
+        const tieneLetras  = /[a-zA-Z]/.test(nueva);
+        const tieneNumeros = /[0-9]/.test(nueva);
+        if (!tieneLetras || !tieneNumeros) {
+            mostrarError("La contraseña debe contener letras y números");
+            return;
+        }
+
+        // Validar que coincidan
+        if (nueva !== confirmar) {
+            mostrarError("Las contraseñas no coinciden");
+            return;
+        }
+
+        try {
+            const nombre   = document.getElementById("nombre").value  || localStorage.getItem("nombre");
+            const apellido = document.getElementById("apellido").value || localStorage.getItem("apellido");
+            const email    = document.getElementById("email").value   || localStorage.getItem("email");
+
+            const response = await fetch(`${API_URL}/usuarios/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    nombre,
+                    apellido,
+                    email,
+                    password: nueva,
+                    rol: rol,
+                    activo: true
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            document.getElementById("passwordNueva").value    = "";
+            document.getElementById("passwordConfirmar").value = "";
+            mostrarExito("Contraseña actualizada exitosamente");
+
+        } catch (error) {
+            mostrarError("Error al cambiar la contraseña");
+        }
+    }
+
+    function mostrarError(mensaje) {
+        const el = document.getElementById("alerta");
+        document.getElementById("mensajeAlerta").textContent = mensaje;
+        el.classList.remove("d-none");
+        setTimeout(() => el.classList.add("d-none"), 4000);
+    }
+
+    function mostrarExito(mensaje) {
+        const el = document.getElementById("alertaExito");
+        document.getElementById("mensajeExito").textContent = mensaje;
+        el.classList.remove("d-none");
+        setTimeout(() => el.classList.add("d-none"), 4000);
+    }
+
+    cargarPerfil();
+</script>
+</body>
+</html>

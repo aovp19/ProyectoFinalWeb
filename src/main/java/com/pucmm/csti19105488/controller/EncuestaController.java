@@ -6,6 +6,8 @@ import com.pucmm.csti19105488.service.EncuestaService;
 import com.pucmm.csti19105488.service.UsuarioService;
 import org.bson.types.ObjectId;
 
+import java.util.List;
+
 import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class EncuestaController {
@@ -21,9 +23,10 @@ public class EncuestaController {
             post( ctx -> {
                 Encuesta encuesta = ctx.bodyAsClass(Encuesta.class);
 
-                // Toma el email del token JWT
                 String email = ctx.attribute("email");
+                System.out.println("Email del token: " + email);
                 Usuario encuestador = usuarioService.buscarPorEmail(email);
+                System.out.println("Encuestador encontrado: " + (encuestador != null ? encuestador.getEmail() : "NULL"));
                 encuesta.setEncuestador(encuestador);
                 encuesta.setSincronizado(true);
 
@@ -35,17 +38,6 @@ public class EncuestaController {
             get( ctx -> {
                 ctx.json(encuestaService.listarTodasEncuestas());
             });
-
-            // Listar encuestas por usuario
-            path("/usuario/{id}", () -> {
-
-                get( ctx -> {
-                    String id = ctx.pathParam("id");
-                    Usuario usuario = usuarioService.buscarPorId(new ObjectId(id));
-                    ctx.json(encuestaService.listarEncuestasPorUsuario(usuario));
-                });
-            });
-
 
             path("/{id}", () -> {
 
@@ -80,6 +72,20 @@ public class EncuestaController {
                         encuestaService.sincronizarEncuesta(encuestaService.buscarEncuestaPorId(new ObjectId(id)));
                         ctx.status(200).json("Encuesta sincronizada exitosamente");
                     });
+                });
+            });
+
+
+            // Listar encuestas por usuario
+            path("/usuario/{id}", () -> {
+
+                get( ctx -> {
+                    String id = ctx.pathParam("id");
+                    Usuario usuario = usuarioService.buscarPorId(new ObjectId(id));
+                    System.out.println("Buscando encuestas para usuario: " + usuario.getEmail());
+                    List encuestas = encuestaService.listarEncuestasPorUsuario(usuario);
+                    System.out.println("Encuestas encontradas: " + encuestas.size());
+                    ctx.json(encuestas);
                 });
             });
         });

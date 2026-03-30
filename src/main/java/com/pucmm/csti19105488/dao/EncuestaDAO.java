@@ -47,10 +47,11 @@ public class EncuestaDAO implements RepositorioBase<Encuesta>{
         }
     }
 
-    public List<Encuesta> buscarPorEncuestador(Usuario encuestador) {
+    public List<Encuesta> buscarPorEncuestador(Usuario usuario) {
         return datastore.find(Encuesta.class)
-                .filter(Filters.eq("encuestador", encuestador))
-                .iterator().toList();
+                .filter(Filters.eq("encuestador", usuario))
+                .iterator()
+                .toList();
     }
 
     public List<Encuesta> buscarNoSincronizados(){

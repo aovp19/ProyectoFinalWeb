@@ -58,8 +58,10 @@ public class Main {
            config.routes.apiBuilder(() -> {
 
                // Filtro JWT para rutas protegidas
-               before("encuestas/*", Main::filtroJwt);
-               before("usuarios/*",  Main::filtroJwt);
+               before("/encuestas", Main::filtroJwt);
+               before("/encuestas/*", Main::filtroJwt);
+               before("/usuarios", Main::filtroJwt);
+               before("/usuarios/*",  Main::filtroJwt);
 
                UsuarioController.registrarRutas();
                EncuestaController.registrarRutas();

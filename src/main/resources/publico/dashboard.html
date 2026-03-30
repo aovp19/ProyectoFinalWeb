@@ -248,7 +248,7 @@
           <div class="stat-label">Pendientes</div>
           <div class="stat-numero" id="encuestasPendientes">—</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" id="statUsuarios" style="display:none">
           <div class="stat-label">Usuarios</div>
           <div class="stat-numero" id="totalUsuarios">—</div>
         </div>
@@ -332,15 +332,28 @@
   // Muestra la tarjeta de usuarios si es admin
   if (rol === "ADMIN") {
     document.getElementById("cardUsuarios").style.display = "block";
+    document.getElementById("statUsuarios").style.display = "block";
   }
 
   // Carga las estadísticas
   async function cargarStats() {
     try {
-      const response = await fetch(`${API_URL}/encuestas`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const encuestas = await response.json();
+      let encuestas = [];
+
+      if (rol === "ADMIN") {
+        // Admin ve todas las encuestas
+        const response = await fetch(`${API_URL}/encuestas`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        encuestas = await response.json();
+      } else {
+        // Encuestador ve solo las suyas
+        const userId = localStorage.getItem("userId");
+        const response = await fetch(`${API_URL}/encuestas/usuario/${userId}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        encuestas = await response.json();
+      }
 
       document.getElementById("totalEncuestas").textContent = encuestas.length;
       document.getElementById("encuestasSincronizadas").textContent =

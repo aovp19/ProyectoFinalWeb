@@ -57,6 +57,14 @@ public class UsuarioController {
                         ctx.status(200).json("Usuario activado exitosamente");
                     });
                 });
+
+                // Para mostrar la pagina de usuario
+                get(ctx -> {
+                    String id = ctx.pathParam("id");
+                    Usuario usuario = usuarioService.buscarPorId(new ObjectId(id));
+                    ctx.json(usuario);
+                });
+
             });
         });
 

@@ -381,20 +381,31 @@
     async function cargarEncuestas() {
         try {
             let encuestas = [];
+            const rol = localStorage.getItem("rol");
 
             if (estaOnline()) {
-                const response = await fetch(`${API_URL}/encuestas`, {
+                let url = `${API_URL}/encuestas`;
+
+                if (rol !== "ADMIN") {
+                    url = `${API_URL}/encuestas/usuario/${userId}`;
+                }
+
+                const response = await fetch(url, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
+
                 encuestas = await response.json();
             }
 
             await inicializarDB();
+
             const locales = await obtenerEncuestasLocales();
             const localesPendientes = locales.filter(l => !l.sincronizado);
+
             encuestas = [...encuestas, ...localesPendientes];
 
             renderTabla(encuestas);
+
         } catch (error) {
             await inicializarDB();
             const locales = await obtenerEncuestasLocales();

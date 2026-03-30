@@ -75,24 +75,24 @@
         });
 
         return `
-      <div class="sidebar-logo">
+      <a href="/dashboard.html" class="sidebar-logo" style="text-decoration:none;">
         <div class="sidebar-logo-sq">
           <i class="bi bi-clipboard-data-fill"></i>
         </div>
-        <span class="sidebar-logo-name">PUCMM</span>
-      </div>
+        <span class="sidebar-logo-name">ENCUESTAS PUCMM</span>
+      </a>
 
       ${sectionsHTML}
 
       <div class="sidebar-spacer"></div>
 
-      <div class="sidebar-user">
+      <a href="/perfil.html" class="sidebar-user" style="text-decoration:none;">
         <div class="sidebar-avatar">${getInitials()}</div>
         <div>
           <div class="sidebar-user-name">${getDisplayName()}</div>
           <div class="sidebar-user-role">${getRol()}</div>
         </div>
-      </div>`;
+      </a>`;
     }
 
     // ── INYECTA EL SIDEBAR EN EL DOM ──
