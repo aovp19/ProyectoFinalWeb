@@ -6,6 +6,7 @@ import dev.morphia.annotations.Reference;
 import org.bson.types.ObjectId;
 
 @Entity("usuarios")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true) // para que el json inore campos desconocidos y no de error
 public class Usuario {
 
     @Id

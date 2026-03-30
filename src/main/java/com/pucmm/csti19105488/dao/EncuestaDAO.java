@@ -31,7 +31,13 @@ public class EncuestaDAO implements RepositorioBase<Encuesta>{
 
     @Override
     public List<Encuesta> buscarTodos() {
-        return datastore.find(Encuesta.class).iterator().toList();
+        List<Encuesta> encuestas = datastore.find(Encuesta.class).iterator().toList();
+        // Debug
+        for (Encuesta e : encuestas) {
+            System.out.println("Encuesta: " + e.getId() + " | Encuestador: " +
+                    (e.getEncuestador() != null ? e.getEncuestador().getNombre() : "NULL"));
+        }
+        return encuestas;
     }
 
     @Override

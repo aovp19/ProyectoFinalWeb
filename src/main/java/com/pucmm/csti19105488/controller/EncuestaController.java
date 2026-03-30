@@ -1,5 +1,6 @@
 package com.pucmm.csti19105488.controller;
 
+import com.pucmm.csti19105488.dto.EncuestaDTO;
 import com.pucmm.csti19105488.model.Encuesta;
 import com.pucmm.csti19105488.model.Usuario;
 import com.pucmm.csti19105488.service.EncuestaService;
@@ -36,7 +37,10 @@ public class EncuestaController {
 
             // Listar encuestas
             get( ctx -> {
-                ctx.json(encuestaService.listarTodasEncuestas());
+                ctx.json(encuestaService.listarTodasEncuestas()
+                        .stream()
+                        .map(EncuestaDTO::new)
+                        .toList());
             });
 
             path("/{id}", () -> {

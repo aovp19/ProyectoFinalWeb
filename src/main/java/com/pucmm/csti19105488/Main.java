@@ -34,7 +34,7 @@ public class Main {
         //Crear el servidor Javalin
        Javalin.create(config -> {
 
-            // Configuracion de archivos estaticos
+           // Configuracion de archivos estaticos
             config.staticFiles.add(staticFilesConfig -> {
                 staticFilesConfig.hostedPath = "/";
                 staticFilesConfig.directory = "/publico";

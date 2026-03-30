@@ -57,42 +57,56 @@
             if (section.adminOnly && !isAdmin) return;
 
             let itemsHTML = "";
+
             section.items.forEach(item => {
                 if (item.adminOnly && !isAdmin) return;
+
                 const active = isActive(item.href) ? "active" : "";
+
                 itemsHTML += `
-          <a href="${item.href}" class="sidebar-item ${active}">
-            <i class="bi ${item.icon}"></i>
-            ${item.label}
-          </a>`;
+                <a href="${item.href}" class="sidebar-item ${active}">
+                    <i class="bi ${item.icon}"></i>
+                    ${item.label}
+                </a>
+            `;
             });
 
             sectionsHTML += `
-        <div class="sidebar-section">
-          <div class="sidebar-section-label">${section.section}</div>
-          ${itemsHTML}
-        </div>`;
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">${section.section}</div>
+                ${itemsHTML}
+            </div>
+        `;
         });
 
         return `
-      <a href="/dashboard.html" class="sidebar-logo" style="text-decoration:none;">
-        <div class="sidebar-logo-sq">
-          <i class="bi bi-clipboard-data-fill"></i>
+        <div class="mobile-topbar">
+            <a href="/dashboard.html" class="sidebar-logo" style="text-decoration:none;">
+                <div class="sidebar-logo-sq">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                </div>
+                <span class="sidebar-logo-name">ENCUESTAS PUCMM</span>
+            </a>
+
+            <button class="hamburger-btn" onclick="toggleSidebarMenu()">
+                <i class="bi bi-list"></i>
+            </button>
         </div>
-        <span class="sidebar-logo-name">ENCUESTAS PUCMM</span>
-      </a>
 
-      ${sectionsHTML}
+        <div class="sidebar-menu" id="sidebarMenu">
+            ${sectionsHTML}
 
-      <div class="sidebar-spacer"></div>
+            <div class="sidebar-spacer"></div>
 
-      <a href="/perfil.html" class="sidebar-user" style="text-decoration:none;">
-        <div class="sidebar-avatar">${getInitials()}</div>
-        <div>
-          <div class="sidebar-user-name">${getDisplayName()}</div>
-          <div class="sidebar-user-role">${getRol()}</div>
+            <a href="/perfil.html" class="sidebar-user" style="text-decoration:none;">
+                <div class="sidebar-avatar">${getInitials()}</div>
+                <div>
+                    <div class="sidebar-user-name">${getDisplayName()}</div>
+                    <div class="sidebar-user-role">${getRol()}</div>
+                </div>
+            </a>
         </div>
-      </a>`;
+    `;
     }
 
     // ── INYECTA EL SIDEBAR EN EL DOM ──
@@ -121,6 +135,10 @@
     window.cerrarSesion = function () {
         localStorage.clear();
         window.location.href = "/index.html";
+    };
+
+    window.toggleSidebarMenu = function () {
+        document.getElementById("sidebarMenu").classList.toggle("show");
     };
 
     // ── INIT ──
