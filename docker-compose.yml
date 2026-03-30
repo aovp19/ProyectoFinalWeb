@@ -1,0 +1,7 @@
+services:
+  api:
+    build: .
+    container_name: encuestas-pucmm
+    ports:
+      - "7000:7000"
+    restart: always
