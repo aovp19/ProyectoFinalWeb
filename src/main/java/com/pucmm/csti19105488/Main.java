@@ -1,8 +1,12 @@
 package com.pucmm.csti19105488;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pucmm.csti19105488.config.MongoConfig;
 import com.pucmm.csti19105488.controller.EncuestaController;
 import com.pucmm.csti19105488.controller.UsuarioController;
+import com.pucmm.csti19105488.grpc.FormularioGrpcService;
 import com.pucmm.csti19105488.dao.UsuarioDAO;
 import com.pucmm.csti19105488.model.Rol;
 import com.pucmm.csti19105488.model.Usuario;
@@ -14,11 +18,14 @@ import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.UnauthorizedResponse;
 import io.javalin.http.staticfiles.Location;
+import io.javalin.json.JavalinJackson;
 import io.javalin.rendering.template.JavalinFreemarker;
 import io.jsonwebtoken.Claims;
 import org.jetbrains.annotations.NotNull;
 
-import static io.javalin.apibuilder.ApiBuilder.before;
+import java.io.IOException;
+
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -32,44 +39,77 @@ public class Main {
         inicializarAdmin();
 
         //Crear el servidor Javalin
-       Javalin.create(config -> {
-
-           // Configuracion de archivos estaticos
-            config.staticFiles.add(staticFilesConfig -> {
-                staticFilesConfig.hostedPath = "/";
-                staticFilesConfig.directory = "/publico";
-                staticFilesConfig.location = Location.CLASSPATH;
-            });
+        Javalin app = Javalin.create(config -> {
 
             // Configuracion de plantillas
             config.fileRenderer(new JavalinFreemarker());
 
             // CORS para permitir peticiones de todas partes
             config.bundledPlugins.enableCors(cors -> {
-               cors.addRule(rule -> rule.anyHost());
+                cors.addRule(rule -> rule.anyHost());
             });
 
-           // Manejador de excepciones global
-           config.routes.exception(Exception.class, (e, ctx) -> {
-               ctx.status(500).result(e.getMessage());
-           });
+            // Manejador de excepciones global
+            config.routes.exception(Exception.class, (e, ctx) -> {
+                ctx.status(500).result(e.getMessage());
+            });
 
-           // Rutas
-           config.routes.apiBuilder(() -> {
+            config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            }));
 
-               // Filtro JWT para rutas protegidas
-               before("/encuestas", Main::filtroJwt);
-               before("/encuestas/*", Main::filtroJwt);
-               before("/usuarios", Main::filtroJwt);
-               before("/usuarios/*",  Main::filtroJwt);
+            // Rutas
+            config.routes.apiBuilder(() -> {
+                // Filtro JWT para rutas protegidas
+                before("/encuestas", Main::filtroJwt);
+                before("/encuestas/*", Main::filtroJwt);
+                before("/usuarios", Main::filtroJwt);
+                before("/usuarios/*",  Main::filtroJwt);
+                before("/api/*", Main::filtroJwt);
 
-               UsuarioController.registrarRutas();
-               EncuestaController.registrarRutas();
-           });
+                UsuarioController.registrarRutas();
+                EncuestaController.registrarRutas();
+
+                ws("/sync", EncuestaController::configurarWs);
+            });
+
+            config.routes.post("/grpc/formulario.FormularioService/ListarFormularios", ctx -> {
+                com.fasterxml.jackson.databind.ObjectMapper mapper =
+                        new com.fasterxml.jackson.databind.ObjectMapper();
+                java.util.Map<String, Object> body = mapper.readValue(ctx.body(), java.util.Map.class);
+                String usuarioId = (String) body.getOrDefault("usuarioId", "");
+                FormularioGrpcService service = new FormularioGrpcService();
+                ctx.json(service.listarParaHttp(usuarioId));
+            });
+
+            config.routes.post("/grpc/formulario.FormularioService/CrearFormulario", ctx -> {
+                com.fasterxml.jackson.databind.ObjectMapper mapper =
+                        new com.fasterxml.jackson.databind.ObjectMapper();
+                java.util.Map<String, Object> body = mapper.readValue(ctx.body(), java.util.Map.class);
+                FormularioGrpcService service = new FormularioGrpcService();
+                ctx.json(service.crearParaHttp(body));
+            });
 
 
-        }).start(7000);
+        }).start(7000);;
+
+
+
         System.out.println("Servidor corriendo en el puerto 7000");
+
+        try {
+            io.grpc.Server grpcServer = io.grpc.ServerBuilder
+                    .forPort(50051)
+                    .addService(new FormularioGrpcService())
+                    .build()
+                    .start();
+
+            System.out.println("Servidor gRPC corriendo en el puerto 50051");
+            Runtime.getRuntime().addShutdownHook(new Thread(grpcServer::shutdown));
+        } catch (IOException e) {
+            System.err.println("Error al iniciar servidor gRPC: " + e.getMessage());
+        }
     }
 
     private static void filtroJwt(@NotNull Context ctx) {

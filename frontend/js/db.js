@@ -86,12 +86,18 @@ function obtenerEncuestasPendientes() {
 }
 
 // Actualizar encuesta local
-function actualizarEncuestaLocal(encuesta) {
+function actualizarEncuestaLocal(id, datos) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(["encuestas"], "readwrite");
         const store = transaction.objectStore("encuestas");
-        const request = store.put(encuesta);
-        request.onsuccess = () => resolve(request.result);
+        const request = store.get(id);
+        request.onsuccess = () => {
+            if (!request.result) { reject(new Error("Encuesta no encontrada")); return; }
+            const encuestaActualizada = { ...request.result, ...datos };
+            const put = store.put(encuestaActualizada);
+            put.onsuccess = () => resolve();
+            put.onerror  = () => reject(put.error);
+        };
         request.onerror = () => reject(request.error);
     });
 }
@@ -150,6 +156,11 @@ function obtenerSesionLocal(clave) {
 }
 
 // ===== VERIFICAR CONEXION =====
-function estaOnline() {
-    return navigator.onLine;
+async function estaOnline() {
+    try {
+        const res = await fetch('/ping', { method: 'HEAD', cache: 'no-store' });
+        return res.ok;
+    } catch {
+        return false;
+    }
 }

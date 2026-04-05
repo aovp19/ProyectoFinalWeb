@@ -14,7 +14,9 @@
             section: "Administración",
             adminOnly: true,
             items: [
-                { label: "Usuarios", icon: "bi-people", href: "/usuarios.html", adminOnly: true }
+                { label: "Usuarios", icon: "bi-people", href: "/usuarios.html", adminOnly: true },
+                { label: "Cliente Rest", icon: "bi-braces", href: "/cliente-rest.html", adminOnly: true },
+                { label: "Cliente gRPC", icon: "bi-braces", href: "/cliente-grpc.html", adminOnly: true }
             ]
         }
     ];
@@ -82,9 +84,7 @@
         return `
         <div class="mobile-topbar">
             <a href="/dashboard.html" class="sidebar-logo" style="text-decoration:none;">
-                <div class="sidebar-logo-sq">
-                    <i class="bi bi-clipboard-data-fill"></i>
-                </div>
+                <img src="/img/logo.png" alt="Encuestas PUCMM" style="height:32px;">
                 <span class="sidebar-logo-name">ENCUESTAS PUCMM</span>
             </a>
 
@@ -143,8 +143,82 @@
 
     // ── INIT ──
     document.addEventListener("DOMContentLoaded", function () {
+
         injectStyles();
         injectSidebar();
+
+        function actualizarContadorPendientes() {
+            inicializarDB().then(() => {
+                obtenerEncuestasPendientes().then(pendientes => {
+                    const badge = document.getElementById('badge-pendientes');
+                    if (!badge) return;
+                    if (pendientes.length > 0) {
+                        badge.textContent = pendientes.length;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function actualizarIndicadorConexion(online) {
+            const indicador = document.getElementById('indicador-conexion');
+            if (!indicador) return;
+            indicador.textContent = online ? 'Online' : 'Offline';
+            indicador.className   = online ? 'badge-sincronizado' : 'badge-pendiente';
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/js/sw.js');
+        }
+
+        // Worker solo arranca si hay token — no en la página de login
+        //if (!localStorage.getItem('token')) return;
+        if (!localStorage.getItem('token')) {
+            console.log("Sin token, no se crea el Worker");
+            return;
+        }
+
+        const syncWorker = new Worker('/js/syncworker.js');
+        window.syncWorker = syncWorker;
+
+        syncWorker.postMessage({
+            type: 'INIT',
+            payload: {
+                wsUrl: `ws://${location.host}/sync`,
+                token: localStorage.getItem('token')
+            }
+        });
+
+        syncWorker.onmessage = async (e) => {
+            const { type, payload } = e.data;
+            switch (type) {
+                case 'REQUEST_PENDING_RECORDS':
+                    await inicializarDB();
+                    const pendientes = await obtenerEncuestasPendientes();
+                    syncWorker.postMessage({
+                        type: 'RECORDS_READY',
+                        payload: { records: pendientes }
+                    });
+                    break;
+                case 'MARK_SYNCED':
+                    for (const id of payload.ids) {
+                        await marcarComoSincronizada(id);
+                    }
+                    actualizarContadorPendientes();
+                    break;
+                case 'CONNECTIVITY_CHANGE':
+                    actualizarIndicadorConexion(payload.online);
+                    break;
+                case 'SYNC_STARTED':
+                    console.log(`Sincronizando ${payload.total} registros...`);
+                    break;
+                case 'SYNC_ACK':
+                    console.log(`Sincronizados: ${payload.syncedIds?.length}`);
+                    break;
+            }
+        };
     });
 
 })();

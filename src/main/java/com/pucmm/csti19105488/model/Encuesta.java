@@ -62,5 +62,8 @@ public class Encuesta {
     public void setUbicacion(Ubicacion ubicacion) { this.ubicacion = ubicacion; }
     public void setFotoBase64(String fotoBase64) { this.fotoBase64 = fotoBase64; }
     public void setSincronizado(boolean sincronizado) { this.sincronizado = sincronizado; }
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
+    }
 
 }

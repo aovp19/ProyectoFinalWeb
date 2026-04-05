@@ -30,7 +30,7 @@ public class UsuarioService {
             throw new RuntimeException("Usuario no encontrado");
         }
         if (!usuario.getPassword().equals(password)) {
-            throw new RuntimeException("Contraseña incorrecta.");
+            throw new RuntimeException("Credenciales incorrecta. Verifica tu email y contraseña.");
             // Se verfica con el JWT para autenticar al usuario
         }
         return usuario;

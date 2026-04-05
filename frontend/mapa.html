@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Encuestas PUCMM - Mapa de Ubicaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="/js/base.js"></script>
+
+    <style>
+        :root {
+            --cream: #FAF8F4;
+            --ink: #1A1714;
+            --ink-light: #6B6560;
+            --ink-lighter: #B8B3AE;
+            --accent: #2B5BDB;
+            --accent-dark: #1A3A9E;
+            --success: #1A7A4A;
+            --danger: #A32D2D;
+            --border: #E5E1DB;
+            --surface: #FFFFFF;
+            --shadow: 0 10px 30px rgba(26, 23, 20, 0.08);
+            --shadow-soft: 0 6px 20px rgba(26, 23, 20, 0.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        /* Fondo decorativo */
+        .page-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                    radial-gradient(circle at 10% 20%, rgba(43,91,219,0.08), transparent 30%),
+                    radial-gradient(circle at 90% 15%, rgba(43,91,219,0.05), transparent 25%),
+                    linear-gradient(to bottom right, #faf8f4, #f5f2ec);
+        }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            padding: 2rem 1rem 3rem;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .page-header {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .brand-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 8px 18px rgba(43,91,219,0.25);
+        }
+
+        .brand-title {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .brand-subtitle {
+            margin: 0;
+            font-size: 0.92rem;
+            color: var(--ink-light);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            background: #f6f4ef;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.55rem 0.9rem;
+            font-size: 0.85rem;
+            color: var(--ink-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar-card, .map-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar-card {
+            padding: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 0.25rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--ink-light);
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            background: #fcfbf8;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--ink-light);
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .legend {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--ink-light);
+            margin-bottom: 0.65rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 4px rgba(43,91,219,0.12);
+        }
+
+        /* Map card */
+        .map-card {
+            overflow: hidden;
+        }
+
+        .map-card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: linear-gradient(to right, #ffffff, #fbfaf7);
+        }
+
+        .map-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .map-subtitle {
+            margin: 0;
+            font-size: 0.82rem;
+            color: var(--ink-light);
+        }
+
+        .map-badge {
+            background: rgba(43,91,219,0.08);
+            color: var(--accent-dark);
+            border: 1px solid rgba(43,91,219,0.12);
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        #map {
+            width: 100%;
+            height: 620px;
+        }
+
+        @media (max-width: 768px) {
+            #map {
+                height: 480px;
+            }
+        }
+
+        /* Popup personalizado */
+        .leaflet-popup-content-wrapper {
+            border-radius: 14px;
+            box-shadow: 0 12px 28px rgba(26, 23, 20, 0.14);
+        }
+
+        .leaflet-popup-content {
+            margin: 12px 14px;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .popup-card {
+            min-width: 200px;
+        }
+
+        .popup-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 0.35rem;
+        }
+
+        .popup-text {
+            font-size: 0.82rem;
+            color: var(--ink-light);
+            margin-bottom: 0.35rem;
+        }
+
+        .popup-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            background: rgba(43,91,219,0.08);
+            color: var(--accent-dark);
+            border: 1px solid rgba(43,91,219,0.12);
+            border-radius: 999px;
+            padding: 0.35rem 0.6rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Botón elegante */
+        .btn-soft {
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--ink);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.55rem 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-soft:hover {
+            border-color: rgba(43,91,219,0.25);
+            color: var(--accent-dark);
+            box-shadow: 0 6px 14px rgba(43,91,219,0.08);
+        }
+
+        /* Ajuste de controles leaflet */
+        .leaflet-control-zoom a {
+            border-radius: 8px !important;
+            border: none !important;
+            color: var(--ink) !important;
+        }
+
+        .leaflet-control-zoom {
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .leaflet-control-attribution {
+            font-size: 11px !important;
+            background: rgba(255,255,255,0.85) !important;
+            border-radius: 8px 0 0 0;
+        }
+
+        /* Marker HTML custom */
+        .custom-marker {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 3px solid white;
+            box-shadow: 0 0 0 6px rgba(43,91,219,0.14), 0 6px 14px rgba(26,23,20,0.18);
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar"></div>
+
+<div class="page-wrapper">
+    <div class="container-custom">
+
+        <!-- Header -->
+        <div class="page-header">
+            <div class="brand-row">
+                <div class="brand-left">
+                    <div class="brand-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div>
+                        <h1 class="brand-title">Mapa de Ubicaciones</h1>
+                        <p class="brand-subtitle">Visualización de coordenadas de encuestas y puntos de campo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout -->
+        <div class="dashboard-grid">
+            <!-- Sidebar -->
+            <div class="sidebar-card">
+                <div class="card-title">Resumen</div>
+                <div class="card-subtitle">Información rápida de los puntos cargados</div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Total de puntos</div>
+                    <div class="stat-value" id="totalPuntos">0</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Centro estimado</div>
+                    <div class="stat-value" id="centroTexto" style="font-size: 1rem;">—</div>
+                </div>
+
+                <button class="btn btn-soft w-100 mt-2" id="btnAjustarMapa">
+                    <i class="bi bi-arrows-fullscreen me-2"></i>Ajustar al contenido
+                </button>
+
+                <div class="legend">
+                    <div class="card-title mb-2">Leyenda</div>
+
+                    <div class="legend-item">
+                        <span class="legend-dot"></span>
+                        <span>Punto registrado</span>
+                    </div>
+
+                    <div class="legend-item">
+                        <i class="bi bi-info-circle" style="color: var(--accent);"></i>
+                        <span>Haz clic en un punto para ver detalles</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="map-card">
+                <div class="map-card-header">
+                    <div>
+                        <p class="map-title">Ubicaciones geográficas</p>
+                        <p class="map-subtitle">Se ajusta automáticamente según las coordenadas disponibles</p>
+                    </div>
+
+                </div>
+
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // INICIALIZAR MAPA
+    const map = L.map('map', {
+        zoomControl: true
+    }).setView([19.4517, -70.6970], 13);
+
+    // Capa base
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Grupo para manejar markers fácilmente
+    const markersGroup = L.featureGroup().addTo(map);
+
+    // Icono personalizado con HTML
+    const customIcon = L.divIcon({
+        className: '',
+        html: `<div class="custom-marker"></div>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -10]
+    });
+
+    function cargarUbicaciones(encuestas) {
+        if (!Array.isArray(encuestas)) {
+            console.error("No se recibió un array de encuestas:", encuestas);
+            return;
+        }
+
+        const bounds = [];
+
+        encuestas.forEach((encuesta, i) => {
+            console.log(`Encuesta ${i}:`, encuesta);
+
+            const lat = encuesta.latitud;
+            const lng = encuesta.longitud;
+
+            if (lat != null && lng != null) {
+                //const marker = L.marker([lat, lng]).addTo(map);
+                const marker = L.marker([lat, lng], { icon: customIcon }).addTo(markersGroup);
+
+                marker.bindPopup(`
+                    <div class="popup-card">
+                        <div class="popup-title">${encuesta.nombreEncuestado} ${encuesta.apellidoEncuestado}</div>
+                        <div class="popup-text"><i class="bi bi-geo-alt"></i> ${encuesta.sector}</div>
+                        <div class="popup-text"><i class="bi bi-mortarboard"></i> ${encuesta.educacion}</div>
+                        <div class="popup-badge">
+                            <i class="bi bi-crosshair"></i>
+                            ${lat.toFixed(5)}, ${lng.toFixed(5)}
+                        </div>
+                    </div>
+                `, { maxWidth: 260 });
+
+                bounds.push([lat, lng]);
+            } else {
+                console.warn("Encuesta sin coordenadas:", encuesta);
+            }
+        });
+
+        // Total de puntos
+        document.getElementById("totalPuntos").textContent = bounds.length;
+
+        // Centro estimado
+        if (bounds.length > 0) {
+            const avgLat = bounds.reduce((s, b) => s + b[0], 0) / bounds.length;
+            const avgLng = bounds.reduce((s, b) => s + b[1], 0) / bounds.length;
+            document.getElementById("centroTexto").textContent =
+                `${avgLat.toFixed(4)}, ${avgLng.toFixed(4)}`;
+        }
+
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [40, 40] });
+        } else {
+            console.warn("No se encontraron ubicaciones válidas.");
+        }
+    }
+
+    // Botón ajustar
+    document.getElementById("btnAjustarMapa").addEventListener("click", () => {
+        const layers = markersGroup.getLayers();
+
+        if (layers.length > 0) {
+            const groupBounds = markersGroup.getBounds();
+            map.fitBounds(groupBounds, { padding: [40, 40] });
+        } else {
+            console.warn("No hay marcadores para ajustar.");
+        }
+    });
+
+    const token = localStorage.getItem("token");
+
+    fetch('/encuestas', {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    })
+        .then(async res => {
+            const text = await res.text();
+            console.log("STATUS:", res.status);
+            console.log("RESPUESTA RAW:", text);
+
+            try {
+                const data = JSON.parse(text);
+                console.log("Encuestas recibidas:", data);
+                cargarUbicaciones(data);
+            } catch (e) {
+                console.error("La respuesta no es JSON:", text);
+            }
+        })
+        .catch(err => console.error("Error cargando encuestas:", err));
+
+    // Importante: corrige render si el mapa está dentro de un contenedor flexible
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 200);
+</script>
+</body>
+</html>

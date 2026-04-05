@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="/js/db.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuestas PUCMM - Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/estilos.css">
+    <script src="/js/base.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar — base.js lo rellena -->
+    <div class="sidebar"></div>
+
+    <div class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Gestión de usuarios</div>
+                <div class="topbar-sub">Administración de cuentas del sistema</div>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-logout" onclick="cerrarSesion()">
+                    <i class="bi bi-box-arrow-right"></i>Salir
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="page-body">
+
+            <!-- Alertas -->
+            <div id="alerta" class="alert-glass-danger d-none mb-3">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                <span id="mensajeAlerta"></span>
+            </div>
+            <div id="alertaExito" class="alert-glass-success d-none mb-3">
+                <i class="bi bi-check-circle me-2"></i>
+                <span id="mensajeExito"></span>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <button class="btn-primary-glass" onclick="abrirPanelCrear()">
+                    <i class="bi bi-plus-lg"></i>Nuevo usuario
+                </button>
+            </div>
+
+            <!-- Filtro -->
+            <div class="table-wrap mb-3 p-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" id="filtroBusqueda" class="form-control form-control-sm"
+                               placeholder="Nombre, apellido o email" oninput="aplicarFiltroUsuarios()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Rol</label>
+                        <select id="filtroRol" class="form-select form-select-sm" onchange="aplicarFiltroUsuarios()">
+                            <option value="">Todos</option>
+                            <option value="ADMIN">Administrador</option>
+                            <option value="ENCUESTADOR">Encuestador</option>
+                        </select>
+                    </div>
+                    <div class="col-md-auto align-self-end pb-1">
+                        <label class="d-flex align-items-center gap-2" for="toggleActivos" style="cursor:pointer;font-size:13px;color:var(--ink-light)">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="toggleActivos" checked onchange="cargarUsuarios()"
+                                       style="width:36px;height:20px;cursor:pointer">
+                            </div>
+                            Solo activos
+                        </label>
+                    </div>
+                    <div class="col-md-2 ms-auto align-self-end">
+                        <button class="btn btn-sm btn-outline-secondary w-100" onclick="limpiarFiltrosUsuarios()">
+                            <i class="bi bi-x-circle me-1"></i>Limpiar
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-2" style="font-size:12px;color:var(--ink-light)" id="infoUsuarios"></div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-wrap">
+                <table class="table-glass">
+                    <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th class="d-none d-md-table-cell">Apellido</th>
+                        <th class="d-none d-md-table-cell">Email</th>
+                        <th>Rol</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tablaUsuarios">
+                    <tr>
+                        <td colspan="5" style="text-align:center;color:var(--ink-light);padding:2rem;">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Cargando...
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-center mt-3" id="paginacionUsuarios"></div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Offcanvas Crear/Editar -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="panelUsuario">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="tituloPanel">Nuevo usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <input type="hidden" id="activoUsuario">
+        <input type="hidden" id="usuarioId">
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" placeholder="Nombre">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-control" id="apellido" placeholder="Apellido">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="emailUsuario" placeholder="correo@ce.pucmm.edu.do">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="passwordUsuario" placeholder="••••••••">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Rol</label>
+            <select class="form-select" id="rolUsuario">
+                <option value="ADMIN">Administrador</option>
+                <option value="ENCUESTADOR">Encuestador</option>
+            </select>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn-primary-glass w-100 justify-content-center" onclick="guardarUsuario()">
+                <i class="bi bi-save"></i>Guardar
+            </button>
+            <button class="btn-danger-glass" data-bs-dismiss="offcanvas">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Desactivar -->
+<div class="modal fade modal-glass" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar desactivación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro que deseas desactivar este usuario? Podrás reactivarlo más adelante.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-danger-glass" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-primary-glass" onclick="confirmarEliminar()">
+                    <i class="bi bi-person-dash"></i>Desactivar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/paginacion.js"></script>
+<script>
+    const API_URL = "";
+    const token = localStorage.getItem("token");
+    const rol = localStorage.getItem("rol");
+
+    if (!token) window.location.href = "/index.html";
+    if (rol !== "ADMIN") window.location.href = "/dashboard.html";
+
+    let usuarioIdEliminar = null;
+    let modoEdicion = false;
+    let  paginadorUsuarios;
+
+    async function cargarUsuarios() {
+        try {
+            const soloActivos = document.getElementById("toggleActivos").checked;
+            const url = soloActivos ? `${API_URL}/usuarios` : `${API_URL}/usuarios/todos`;
+
+            const response = await fetch(url, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const usuarios = await response.json();
+
+            paginadorUsuarios = window.Paginador({
+                datos:      usuarios,
+                contenedor: 'tablaUsuarios',
+                paginacion: 'paginacionUsuarios',
+                info:       'infoUsuarios',
+                porPagina:  10,
+                renderFila: renderFilaUsuario
+            });
+        } catch (error) {
+            document.getElementById("tablaUsuarios").innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center;color:var(--ink-light);padding:2rem;">
+                    <i class="bi bi-wifi-off fs-4 d-block mb-2"></i>
+                    Sin conexión — los usuarios no están disponibles offline
+                </td>
+            </tr>`;
+        }
+    }
+
+    function renderFilaUsuario(u) {
+        return `
+        <tr class="${!u.activo ? 'fila-inactiva' : ''}">
+            <td>
+                ${u.nombre}
+                ${!u.activo ? '<span class="badge-inactivo">Inactivo</span>' : ''}
+            </td>
+            <td class="d-none d-md-table-cell">${u.apellido}</td>
+            <td class="d-none d-md-table-cell">${u.email}</td>
+            <td>
+                <span class="badge-rol ${u.rol === 'ADMIN' ? 'badge-admin-rol' : 'badge-encuestador-rol'}">
+                    ${u.rol}
+                </span>
+            </td>
+            <td style="text-align:right">
+                <div class="dropdown">
+                    <button class="btn-tres-puntos dropdown-toggle-split"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-glass dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="#"
+                               onclick="abrirPanelEditar(${JSON.stringify(u).replace(/"/g, '&quot;')})">
+                                <i class="bi bi-pencil me-2"></i>Editar
+                            </a>
+                        </li>
+                        ${u.rol !== 'ADMIN' ? `
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger-glass" href="#"
+                               onclick="${u.activo ? `abrirModalEliminar('${u.id}')` : `activarUsuario('${u.id}')`}">
+                                <i class="bi ${u.activo ? 'bi-person-dash' : 'bi-person-check'} me-2"></i>
+                                ${u.activo ? 'Desactivar' : 'Activar'}
+                            </a>
+                        </li>` : ''}
+                    </ul>
+                </div>
+            </td>
+        </tr>`;
+    }
+
+
+    function aplicarFiltroUsuarios() {
+        if (!paginadorUsuarios) return;
+        const q   = document.getElementById('filtroBusqueda').value.toLowerCase();
+        const rol = document.getElementById('filtroRol').value;
+
+        paginadorUsuarios.filtrar(u => {
+            const okBusqueda = !q ||
+                (u.nombre + ' ' + u.apellido).toLowerCase().includes(q) ||
+                u.email.toLowerCase().includes(q);
+            const okRol = !rol || u.rol === rol;
+            return okBusqueda && okRol;
+        });
+    }
+
+    function limpiarFiltrosUsuarios() {
+        document.getElementById('filtroBusqueda').value = '';
+        document.getElementById('filtroRol').value = '';
+        paginadorUsuarios.limpiar();
+    }
+
+    function abrirPanelCrear() {
+        modoEdicion = false;
+        document.getElementById("tituloPanel").textContent = "Nuevo usuario";
+        document.getElementById("usuarioId").value = "";
+        document.getElementById("nombre").value = "";
+        document.getElementById("apellido").value = "";
+        document.getElementById("emailUsuario").value = "";
+        document.getElementById("passwordUsuario").value = "";
+        document.getElementById("rolUsuario").value = "ENCUESTADOR";
+        document.getElementById("rolUsuario").disabled = false;
+        new bootstrap.Offcanvas(document.getElementById("panelUsuario")).show();
+    }
+
+    function abrirPanelEditar(usuario) {
+        modoEdicion = true;
+        document.getElementById("tituloPanel").textContent = "Editar usuario";
+        document.getElementById("usuarioId").value = usuario.id;
+        document.getElementById("nombre").value = usuario.nombre;
+        document.getElementById("apellido").value = usuario.apellido;
+        document.getElementById("emailUsuario").value = usuario.email;
+        document.getElementById("passwordUsuario").value = "";
+        document.getElementById("rolUsuario").value = usuario.rol;
+        document.getElementById("rolUsuario").disabled = usuario.rol === "ADMIN";
+        document.getElementById("activoUsuario").value = usuario.activo;
+        new bootstrap.Offcanvas(document.getElementById("panelUsuario")).show();
+    }
+
+    async function guardarUsuario() {
+        const id = document.getElementById("usuarioId").value;
+        const usuario = {
+            nombre: document.getElementById("nombre").value,
+            apellido: document.getElementById("apellido").value,
+            email: document.getElementById("emailUsuario").value,
+            password: document.getElementById("passwordUsuario").value,
+            rol: document.getElementById("rolUsuario").value,
+            activo: document.getElementById("activoUsuario").value === "true"
+        };
+
+        try {
+            const url = modoEdicion ? `${API_URL}/usuarios/${id}` : `${API_URL}/usuarios`;
+            const method = modoEdicion ? "PUT" : "POST";
+
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(usuario)
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            bootstrap.Offcanvas.getInstance(document.getElementById("panelUsuario")).hide();
+            mostrarExito(modoEdicion ? "Usuario actualizado exitosamente" : "Usuario creado exitosamente");
+            cargarUsuarios();
+
+        } catch (error) {
+            mostrarError("Error al guardar usuario");
+        }
+    }
+
+    async function activarUsuario(id) {
+        try {
+            const response = await fetch(`${API_URL}/usuarios/${id}/activar`, {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            mostrarExito("Usuario activado exitosamente");
+            cargarUsuarios();
+
+        } catch (error) {
+            mostrarError("Error al activar usuario");
+        }
+    }
+
+    function abrirModalEliminar(id) {
+        usuarioIdEliminar = id;
+        new bootstrap.Modal(document.getElementById("modalEliminar")).show();
+    }
+
+    async function confirmarEliminar() {
+        try {
+            const response = await fetch(`${API_URL}/usuarios/${usuarioIdEliminar}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                mostrarError(error);
+                return;
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
+            mostrarExito("Usuario desactivado exitosamente");
+            cargarUsuarios();
+
+        } catch (error) {
+            mostrarError("Error al desactivar usuario");
+        }
+    }
+
+    function mostrarError(mensaje) {
+        const alerta = document.getElementById("alerta");
+        document.getElementById("mensajeAlerta").textContent = mensaje;
+        alerta.classList.remove("d-none");
+        setTimeout(() => alerta.classList.add("d-none"), 4000);
+    }
+
+    function mostrarExito(mensaje) {
+        const alerta = document.getElementById("alertaExito");
+        document.getElementById("mensajeExito").textContent = mensaje;
+        alerta.classList.remove("d-none");
+        setTimeout(() => alerta.classList.add("d-none"), 4000);
+    }
+
+    function cerrarSesion() {
+        localStorage.clear();
+        window.location.href = "/index.html";
+    }
+
+    document.addEventListener('DOMContentLoaded', () => cargarUsuarios());
+</script>
+</body>
+</html>

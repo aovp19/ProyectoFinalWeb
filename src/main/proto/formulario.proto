@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option java_package = "com.pucmm.csti19105488.grpc";
+option java_outer_classname = "FormularioProto";
+
+service FormularioService {
+  rpc ListarFormularios (ListarRequest) returns (ListarResponse);
+  rpc CrearFormulario (FormularioRequest) returns (FormularioResponse);
+}
+
+message ListarRequest {
+  string usuario_id = 1;
+}
+
+message ListarResponse {
+  repeated FormularioMessage formularios = 1;
+}
+
+message FormularioMessage {
+  string id = 1;
+  string nombre_encuestado = 2;
+  string apellido_encuestado = 3;
+  string sector = 4;
+  string educacion = 5;
+  double latitud = 6;
+  double longitud = 7;
+  string encuestador_nombre = 8;
+  string foto_base64 = 9;
+  bool sincronizado = 10;
+}
+
+message FormularioRequest {
+  string nombre_encuestado = 1;
+  string apellido_encuestado = 2;
+  string sector = 3;
+  string educacion = 4;
+  double latitud = 5;
+  double longitud = 6;
+  string foto_base64 = 7;
+  string encuestador_email = 8;
+}
+
+message FormularioResponse {
+  bool exitoso = 1;
+  string mensaje = 2;
+  string id = 3;
+}
