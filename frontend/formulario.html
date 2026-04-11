@@ -39,17 +39,18 @@
 
         <!-- Contenido -->
         <div class="page-body">
-            <div class="form-card">
+            <div class="page-body-centered">
+                <div class="form-card">
 
-                <div class="form-card-header">
-                    <div class="form-card-icon">
-                        <i class="bi bi-person-lines-fill"></i>
+                    <div class="form-card-header">
+                        <div class="form-card-icon">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </div>
+                        <div>
+                            <div class="form-card-title" id="tituloCard">Datos del encuestado</div>
+                            <div class="form-card-sub">Ingresa la información recopilada en campo</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="form-card-title" id="tituloCard">Datos del encuestado</div>
-                        <div class="form-card-sub">Ingresa la información recopilada en campo</div>
-                    </div>
-                </div>
 
                 <div class="form-card-body">
 
@@ -77,10 +78,11 @@
                             <label class="form-label">Apellido</label>
                             <input type="text" class="form-control" id="apellidoEncuestado" placeholder="Apellido">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Cédula</label>
-                            <input type="text" class="form-control" id="cedula" placeholder="000-0000000-0">
-                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cédula</label>
+                        <input type="text" class="form-control" id="cedula" placeholder="000-0000000-0">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Sector</label>
@@ -111,7 +113,7 @@
                             </button>
                         </div>
 
-                        <div id="seccionCamara">
+                        <div id="seccionCamara" style="display:none;">
                             <video id="webcam" autoplay playsinline></video>
                             <canvas id="canvas" style="display:none;"></canvas>
                             <div class="camara-actions">
@@ -127,7 +129,7 @@
                         <input type="file" id="inputFoto" accept="image/*" capture="environment"
                                class="d-none" onchange="procesarFoto(this)">
 
-                        <img id="previewFoto" src="" alt="Preview de foto">
+                        <img id="previewFoto" alt="Preview de foto">
                     </div>
 
                     <!-- Ubicación -->
@@ -148,7 +150,6 @@
                             <i class="bi bi-geo-alt"></i>Obtener ubicación GPS
                         </button>
                     </div>
-
                 </div>
 
                 <div class="form-card-footer">
@@ -159,7 +160,7 @@
                         <i class="bi bi-save"></i>Guardar encuesta
                     </button>
                 </div>
-
+            </div>
             </div>
         </div>
     </div>

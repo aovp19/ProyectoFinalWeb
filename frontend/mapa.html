@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="/js/db.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Encuestas PUCMM - Mapa de Ubicaciones</title>
@@ -125,144 +126,119 @@
 
 <script>
     let todasLasEncuestas = [];
+    const token  = localStorage.getItem("token");
+    const rol    = localStorage.getItem("rol");
+    const userId = localStorage.getItem("userId");
 
-    // ── Inicializar mapa ──
     const map = L.map('map', { zoomControl: true }).setView([19.4517, -70.6970], 13);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 19
+        attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
     }).addTo(map);
 
     const markersGroup = L.featureGroup().addTo(map);
-
     const customIcon = L.divIcon({
-      className: '',
-      html: `<div style="
-        width:12px; height:12px; border-radius:50%;
-        background:#2B5BDB; border:2px solid #fff;
-        box-shadow:0 0 0 1.5px #2B5BDB, 0 2px 6px rgba(43,91,219,0.35);
-      "></div>`,
-      iconSize: [12, 12],
-      iconAnchor: [6, 6],
-      popupAnchor: [0, -8]
+        className: '',
+        html: `<div style="width:12px;height:12px;border-radius:50%;background:#2B5BDB;border:2px solid #fff;box-shadow:0 0 0 1.5px #2B5BDB,0 2px 6px rgba(43,91,219,0.35);"></div>`,
+        iconSize: [12,12], iconAnchor: [6,6], popupAnchor: [0,-8]
     });
 
-    // ── Cargar datos ──
     function cargarUbicaciones(encuestas) {
-      if (!Array.isArray(encuestas)) return;
-      todasLasEncuestas = encuestas;
+        if (!Array.isArray(encuestas)) return;
+        todasLasEncuestas = encuestas;
 
-      // Poblar select de encuestadores
-      const encuestadores = [...new Set(
-        encuestas
-          .filter(e => e.encuestadorNombre)
-          .map(e => `${e.encuestadorNombre} ${e.encuestadorApellido || ''}`.trim())
-      )];
-      const selEncuestador = document.getElementById('filtroEncuestador');
-      encuestadores.forEach(nombre => {
-        const opt = document.createElement('option');
-        opt.value = nombre;
-        opt.textContent = nombre;
-        selEncuestador.appendChild(opt);
-      });
+        const selEncuestador = document.getElementById('filtroEncuestador');
+        const encuestadores = [...new Set(
+            encuestas.filter(e => e.encuestadorNombre)
+                .map(e => `${e.encuestadorNombre} ${e.encuestadorApellido || ''}`.trim())
+        )];
 
-      renderMarcadores(encuestas);
+        if (rol !== "ADMIN") {
+            selEncuestador.closest('div').style.display = 'none';
+        }
+
+        encuestadores.forEach(nombre => {
+            const opt = document.createElement('option');
+            opt.value = nombre;
+            opt.textContent = nombre;
+            selEncuestador.appendChild(opt);
+        });
+
+        renderMarcadores(encuestas);
     }
 
-    // ── Renderizar marcadores ──
     function renderMarcadores(encuestas) {
-      markersGroup.clearLayers();
-      const bounds = [];
+        markersGroup.clearLayers();
+        const bounds = [];
 
-      encuestas.forEach(encuesta => {
-        const lat = encuesta.latitud;
-        const lng = encuesta.longitud;
-        if (lat == null || lng == null) return;
+        encuestas.forEach(encuesta => {
+            const lat = parseFloat(encuesta.ubicacion?.latitud ?? encuesta.latitud);
+            const lng = parseFloat(encuesta.ubicacion?.longitud ?? encuesta.longitud);
+            if (isNaN(lat) || isNaN(lng)) return;
 
-        const marker = L.marker([lat, lng], { icon: customIcon }).addTo(markersGroup);
+            const marker = L.marker([lat, lng], { icon: customIcon }).addTo(markersGroup);
+            marker.bindPopup(`
+                <div class="popup-inner">
+                    <div class="popup-name">${encuesta.nombreEncuestado} ${encuesta.apellidoEncuestado}</div>
+                    <div class="popup-row"><i class="bi bi-geo-alt-fill"></i> ${encuesta.sector || '—'}</div>
+                    <div class="popup-row"><i class="bi bi-mortarboard-fill"></i> ${encuesta.educacion || '—'}</div>
+                    <div class="popup-row"><i class="bi bi-person-fill"></i> ${encuesta.encuestador?.nombre || '—'}</div>
+                    <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+                </div>
+            `, { maxWidth: 260 });
 
-        marker.bindPopup(`
-          <div class="popup-inner">
-            <div class="popup-name">${encuesta.nombreEncuestado} ${encuesta.apellidoEncuestado}</div>
-            <div class="popup-row"><i class="bi bi-geo-alt-fill"></i>${encuesta.sector || '—'}</div>
-            <div class="popup-row"><i class="bi bi-mortarboard-fill"></i>${encuesta.educacion || '—'}</div>
-            <div class="popup-row"><i class="bi bi-person-fill"></i>${encuesta.encuestadorNombre || '—'}</div>
-            <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
-          </div>
-        `, { maxWidth: 260 });
+            bounds.push([lat, lng]);
+        });
 
-        bounds.push([lat, lng]);
-      });
+        const total = todasLasEncuestas.filter(e => {
+            const lat = parseFloat(e.ubicacion?.latitud ?? e.latitud);
+            const lng = parseFloat(e.ubicacion?.longitud ?? e.longitud);
+            return !isNaN(lat) && !isNaN(lng);
+        }).length;
 
-      // Actualizar stats
-      const total = todasLasEncuestas.filter(e => e.latitud != null && e.longitud != null).length;
-      document.getElementById('totalPuntos').textContent    = total;
-      document.getElementById('totalFiltrados').textContent = bounds.length;
-      document.getElementById('badgePuntos').textContent    = `${bounds.length} puntos`;
-
-      if (bounds.length > 0) {
-        const avgLat = bounds.reduce((s, b) => s + b[0], 0) / bounds.length;
-        const avgLng = bounds.reduce((s, b) => s + b[1], 0) / bounds.length;
-        document.getElementById('centroTexto').textContent =
-          `${avgLat.toFixed(4)}, ${avgLng.toFixed(4)}`;
-        map.fitBounds(bounds, { padding: [40, 40] });
-      } else {
-        document.getElementById('centroTexto').textContent = '—';
-      }
+        document.getElementById('totalPuntos').textContent    = total;
+        document.getElementById('totalFiltrados').textContent = bounds.length;
+        document.getElementById('badgePuntos').textContent    = `${bounds.length} puntos`;
     }
 
-    // ── Filtros ──
     function aplicarFiltros() {
-      const nivel       = document.getElementById('filtroNivel').value;
-      const encuestador = document.getElementById('filtroEncuestador').value;
-      const sector      = document.getElementById('filtroSector').value.toLowerCase();
+        const nivel       = document.getElementById('filtroNivel').value;
+        const encuestador = document.getElementById('filtroEncuestador').value;
+        const sector      = document.getElementById('filtroSector').value.toLowerCase();
 
-      const filtradas = todasLasEncuestas.filter(e => {
-        const okNivel       = !nivel       || e.educacion === nivel;
-        const okEncuestador = !encuestador || `${e.encuestadorNombre} ${e.encuestadorApellido || ''}`.trim() === encuestador;
-        const okSector      = !sector      || (e.sector || '').toLowerCase().includes(sector);
-        return okNivel && okEncuestador && okSector;
-      });
+        const filtradas = todasLasEncuestas.filter(e => {
+            const okNivel       = !nivel       || e.educacion === nivel;
+            const okEncuestador = !encuestador || `${e.encuestadorNombre} ${e.encuestadorApellido || ''}`.trim() === encuestador;
+            const okSector      = !sector      || (e.sector || '').toLowerCase().includes(sector);
+            return okNivel && okEncuestador && okSector;
+        });
 
-      renderMarcadores(filtradas);
+        renderMarcadores(filtradas);
     }
 
     function limpiarFiltros() {
-      document.getElementById('filtroNivel').value       = '';
-      document.getElementById('filtroEncuestador').value = '';
-      document.getElementById('filtroSector').value      = '';
-      renderMarcadores(todasLasEncuestas);
+        document.getElementById('filtroNivel').value       = '';
+        document.getElementById('filtroEncuestador').value = '';
+        document.getElementById('filtroSector').value      = '';
+        renderMarcadores(todasLasEncuestas);
     }
 
-    // ── Ajustar mapa ──
     document.getElementById('btnAjustarMapa').addEventListener('click', () => {
-      const layers = markersGroup.getLayers();
-      if (layers.length > 0) {
-        map.fitBounds(markersGroup.getBounds(), { padding: [40, 40] });
-      }
+        if (markersGroup.getLayers().length > 0) {
+            map.fitBounds(markersGroup.getBounds(), { padding: [40, 40] });
+        }
     });
 
-    // ── Fetch encuestas ──
-    const token = localStorage.getItem('token');
-
-    fetch('/encuestas', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-      .then(async res => {
-        const text = await res.text();
-        try {
-          const data = JSON.parse(text);
-          cargarUbicaciones(data);
-        } catch (e) {
-          console.error('La respuesta no es JSON:', text);
-        }
-      })
-      .catch(err => console.error('Error cargando encuestas:', err));
+    const urlFetch = rol === "ADMIN" ? '/encuestas' : `/encuestas/usuario/${userId}`;
+    fetch(urlFetch, { headers: { "Authorization": `Bearer ${token}` } })
+        .then(async res => {
+            const data = JSON.parse(await res.text());
+            cargarUbicaciones(data);
+        })
+        .catch(err => console.error("Error cargando encuestas:", err));
 
     function cerrarSesion() {
-      localStorage.clear();
-      window.location.href = '/index.html';
+        localStorage.clear();
+        window.location.href = '/index.html';
     }
 
     setTimeout(() => map.invalidateSize(), 200);

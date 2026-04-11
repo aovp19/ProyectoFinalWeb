@@ -5,9 +5,10 @@
         {
             section: "Principal",
             items: [
-                { label: "Dashboard",  icon: "bi-grid",         href: "/dashboard.html" },
-                { label: "Encuestas",  icon: "bi-file-text",    href: "/encuestas.html" },
-                { label: "Ver en mapa",icon: "bi-map",          href: "/mapa.html"      },
+                { label: "Dashboard",  icon: "bi-grid",         href: "/dashboard.html"   },
+                { label: "Encuestas",  icon: "bi-file-text",    href: "/encuestas.html"   },
+                { label: "Ver en mapa",icon: "bi-map",          href: "/mapa.html"        },
+                { label: "Estadísticas", icon: "bi-bar-chart-line", href: "/estadisticas.html", adminOnly: true },
             ]
         },
         {

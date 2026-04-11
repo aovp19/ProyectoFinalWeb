@@ -72,6 +72,7 @@ public class Main {
                 before("/encuestas/*", Main::filtroJwt);
                 before("/usuarios", Main::filtroJwt);
                 before("/usuarios/*",  Main::filtroJwt);
+                before("/estadisticas",  Main::filtroJwt);
                 before("/api/*", Main::filtroJwt);
 
                 UsuarioController.registrarRutas();

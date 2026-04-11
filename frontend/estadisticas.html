@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="/js/db.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Encuestas PUCMM - Estadísticas</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/estilos.css" />
+    <script src="/js/base.js"></script>
+
+</head>
+<body>
+
+<div class="app-shell">
+
+    <div class="sidebar"></div>
+
+    <div class="main">
+
+        <div class="topbar">
+            <div class="topbar-left">
+                <div>
+                    <div class="topbar-title">Estadísticas</div>
+                    <div class="topbar-sub">Análisis general de encuestas registradas</div>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <div class="period-tabs" id="periodTabs">
+                    <button class="period-tab" data-dias="7">7 días</button>
+                    <button class="period-tab" data-dias="30">30 días</button>
+                    <button class="period-tab" data-dias="90">90 días</button>
+                    <button class="period-tab active" data-dias="0">Todo</button>
+                </div>
+                <button class="btn-logout" onclick="cerrarSesion()">
+                    <i class="bi bi-box-arrow-right"></i> Salir
+                </button>
+            </div>
+        </div>
+
+        <div class="page-body">
+
+            <!-- KPIs -->
+            <div class="stats-grid-5">
+                <div class="stat-card">
+                    <div class="stat-label">Total encuestas</div>
+                    <div class="stat-numero" id="kpiTotal">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Sincronizadas</div>
+                    <div class="stat-numero" id="kpiSync">—</div>
+                    <div class="stat-sub-text" id="kpiSyncPct"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pendientes</div>
+                    <div class="stat-numero" id="kpiPend">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Encuestadores</div>
+                    <div class="stat-numero" id="kpiEnc">—</div>
+                    <div class="stat-sub-text">activos en el período</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Sectores</div>
+                    <div class="stat-numero" id="kpiSect">—</div>
+                    <div class="stat-sub-text">zonas cubiertas</div>
+                </div>
+            </div>
+
+            <!-- Fila principal -->
+            <div class="charts-main">
+
+                <div class="chart-card-stat">
+                    <div class="chart-title">Encuestas registradas por día</div>
+                    <div class="chart-sub">Actividad diaria en el período seleccionado</div>
+                    <div class="chart-legend">
+                        <span class="chart-legend-item"><span class="legend-sq" style="background:#2B5BDB"></span>Sincronizadas</span>
+                        <span class="chart-legend-item"><span class="legend-sq-dash"></span>Pendientes</span>
+                    </div>
+                    <div style="position:relative; width:100%; height:220px;">
+                        <canvas id="cLinea" role="img" aria-label="Encuestas registradas por día, sincronizadas y pendientes">Datos de actividad diaria.</canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card-stat">
+                    <div class="chart-title">Top encuestadores</div>
+                    <div class="chart-sub">Por cantidad de registros en el período</div>
+                    <div class="rank-list" id="rankList">
+                        <div class="empty-state">Cargando…</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Fila inferior -->
+            <div class="charts-bottom">
+
+                <div class="chart-card-stat">
+                    <div class="chart-title">Nivel educativo</div>
+                    <div class="chart-sub">Distribución de la muestra</div>
+                    <div class="donut-wrap">
+                        <div style="position:relative; width:130px; height:130px; flex-shrink:0;">
+                            <canvas id="cDonut" role="img" aria-label="Distribución por nivel educativo">Distribución educativa de encuestados.</canvas>
+                        </div>
+                        <div class="donut-legend" id="donutLegend"></div>
+                    </div>
+                </div>
+
+                <div class="chart-card-stat">
+                    <div class="chart-title">Comparativa del equipo</div>
+                    <div class="chart-sub">Encuestas por encuestador</div>
+                    <div style="position:relative; width:100%; height:220px;">
+                        <canvas id="cBarras" role="img" aria-label="Comparativa de encuestas por encuestador">Comparativa entre encuestadores.</canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card-stat">
+                    <div class="chart-title">Top sectores</div>
+                    <div class="chart-sub">Zonas con mayor cobertura</div>
+                    <div style="position:relative; width:100%; height:220px;">
+                        <canvas id="cSectores" role="img" aria-label="Sectores con más encuestas registradas">Sectores con mayor cantidad de encuestas.</canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const rol   = localStorage.getItem('rol');
+    if (!token) window.location.href = '/index.html';
+    if (rol !== "ADMIN") window.location.href = "/dashboard.html";
+
+    function cerrarSesion() { localStorage.clear(); window.location.href = '/index.html'; }
+
+    const C = {
+      blue: '#2B5BDB', blue2: '#85B7EB',
+      teal: '#1D9E75', amber: '#BA7517',
+      coral: '#D85A30', purple: '#7F77DD',
+      gray: '#B4B2A9', border: '#E5E1DB',
+      ink: '#1A1714', inkL: '#6B6560',
+    };
+
+    const EDU_COLORS = [C.blue, C.teal, C.purple, C.amber, C.coral];
+
+    const TT = {
+      backgroundColor: '#1A1714', titleColor: '#FAF8F4',
+      bodyColor: '#B8B3AE', padding: 10, cornerRadius: 8, borderWidth: 0,
+    };
+
+    let todasLasEncuestas = [];
+    let chartLinea = null, chartDonut = null, chartBarras = null, chartSect = null;
+
+    async function cargarDatos() {
+      try {
+        const userId = localStorage.getItem('userId');
+        const url = rol === 'ADMIN' ? '/encuestas' : `/encuestas/usuario/${userId}`;
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        todasLasEncuestas = await res.json();
+      } catch (e) {
+        console.error('Error al cargar encuestas:', e);
+        todasLasEncuestas = [];
+      }
+      renderTodo(0);
+    }
+
+    function filtrarPorDias(dias) {
+      if (!dias) return todasLasEncuestas;
+      const corte = new Date();
+      corte.setDate(corte.getDate() - dias);
+      return todasLasEncuestas.filter(e => {
+        const f = e.fechaCreacion ? new Date(e.fechaCreacion) : null;
+        return f && f >= corte;
+      });
+    }
+
+    function renderTodo(dias) {
+      const datos = filtrarPorDias(dias);
+      renderKPIs(datos);
+      renderLinea(datos, dias || 30);
+      renderRanking(datos);
+      renderDonut(datos);
+      renderBarrasEquipo(datos);
+      renderSectores(datos);
+    }
+
+    function renderKPIs(datos) {
+      const total = datos.length;
+      const sync  = datos.filter(e => e.sincronizado).length;
+      const pend  = total - sync;
+      const encuestadores = new Set(datos.filter(e => e.encuestadorNombre).map(e => e.encuestadorNombre));
+      const sectores      = new Set(datos.filter(e => e.sector).map(e => e.sector));
+
+      document.getElementById('kpiTotal').textContent   = total.toLocaleString();
+      document.getElementById('kpiSync').textContent    = sync.toLocaleString();
+      document.getElementById('kpiSyncPct').textContent = total > 0 ? `${Math.round((sync/total)*100)}% del total` : '—';
+      document.getElementById('kpiPend').textContent    = pend.toLocaleString();
+      document.getElementById('kpiEnc').textContent     = encuestadores.size;
+      document.getElementById('kpiSect').textContent    = sectores.size;
+    }
+
+    function renderLinea(datos, n) {
+      const labels = [], sincArr = [], pendArr = [];
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        labels.push(key.slice(5));
+        const del_dia = datos.filter(e => e.fechaCreacion && new Date(e.fechaCreacion).toISOString().slice(0,10) === key);
+        sincArr.push(del_dia.filter(e => e.sincronizado).length);
+        pendArr.push(del_dia.filter(e => !e.sincronizado).length);
+      }
+
+      if (chartLinea) chartLinea.destroy();
+      chartLinea = new Chart(document.getElementById('cLinea'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Sincronizadas', data: sincArr, borderColor: C.blue, backgroundColor: 'rgba(43,91,219,0.07)', fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: C.blue, borderWidth: 2 },
+            { label: 'Pendientes', data: pendArr, borderColor: C.gray, backgroundColor: 'transparent', borderDash: [4,4], fill: false, tension: 0.4, pointRadius: 3, pointBackgroundColor: C.gray, borderWidth: 1.5 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: TT },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: C.inkL, font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, border: { color: C.border } },
+            y: { beginAtZero: true, ticks: { stepSize: 1, color: C.inkL, font: { size: 11 } }, grid: { color: '#F0EDE8' }, border: { dash: [4,4], color: 'transparent' } }
+          }
+        }
+      });
+    }
+
+    function renderRanking(datos) {
+      const conteo = {};
+      datos.forEach(e => {
+        if (!e.encuestadorNombre) return;
+        const n = `${e.encuestadorNombre} ${e.encuestadorApellido || ''}`.trim();
+        conteo[n] = (conteo[n] || 0) + 1;
+      });
+      const sorted = Object.entries(conteo).sort((a,b) => b[1]-a[1]).slice(0, 6);
+      const maxVal = sorted[0]?.[1] || 1;
+      const lista  = document.getElementById('rankList');
+
+      if (!sorted.length) { lista.innerHTML = `<div class="empty-state">Sin datos para este período</div>`; return; }
+
+      lista.innerHTML = sorted.map(([nombre, total], i) => `
+        <div class="rank-row">
+          <div class="rank-num">${i+1}</div>
+          <div class="rank-name" title="${nombre}">${nombre}</div>
+          <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round((total/maxVal)*100)}%"></div></div>
+          <div class="rank-val">${total}</div>
+        </div>`).join('');
+    }
+
+    function renderDonut(datos) {
+      const niveles = ['UNIVERSITARIO','MEDIO','POSTGRADO','BASICO','DOCTORADO'];
+      const labels  = ['Universitario','Medio','Postgrado','Básico','Doctorado'];
+      const values  = niveles.map(n => datos.filter(e => e.educacion === n).length);
+      const total   = values.reduce((a,b) => a+b, 0) || 1;
+
+      if (chartDonut) chartDonut.destroy();
+      chartDonut = new Chart(document.getElementById('cDonut'), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: EDU_COLORS, borderWidth: 0, hoverOffset: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false }, tooltip: TT } }
+      });
+
+      document.getElementById('donutLegend').innerHTML = labels.map((lbl, i) => `
+        <div class="donut-row">
+          <div class="donut-label"><span class="legend-sq" style="background:${EDU_COLORS[i]}"></span>${lbl}</div>
+          <div class="donut-pct">${Math.round((values[i]/total)*100)}%</div>
+        </div>`).join('');
+    }
+
+    function renderBarrasEquipo(datos) {
+      const conteo = {};
+      datos.forEach(e => {
+        if (!e.encuestadorNombre) return;
+        const n = `${e.encuestadorNombre} ${e.encuestadorApellido || ''}`.trim();
+        conteo[n] = (conteo[n] || 0) + 1;
+      });
+      const sorted  = Object.entries(conteo).sort((a,b) => b[1]-a[1]).slice(0, 5);
+      const nombres = sorted.map(([n]) => n.split(' ')[0]);
+      const valores = sorted.map(([,v]) => v);
+      const colors  = [C.blue, C.teal, C.purple, C.amber, C.coral];
+
+      if (chartBarras) chartBarras.destroy();
+      chartBarras = new Chart(document.getElementById('cBarras'), {
+        type: 'bar',
+        data: { labels: nombres, datasets: [{ label: 'Encuestas', data: valores, backgroundColor: colors.slice(0, sorted.length), borderRadius: 6, borderSkipped: false }] },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: TT },
+          scales: {
+            x: { beginAtZero: true, ticks: { color: C.inkL, font: { size: 11 } }, grid: { color: '#F0EDE8' }, border: { dash: [4,4], color: 'transparent' } },
+            y: { grid: { display: false }, ticks: { color: C.inkL, font: { size: 12 } }, border: { color: C.border } }
+          }
+        }
+      });
+    }
+
+    function renderSectores(datos) {
+      const conteo = {};
+      datos.forEach(e => { if (!e.sector) return; conteo[e.sector] = (conteo[e.sector] || 0) + 1; });
+      const sorted    = Object.entries(conteo).sort((a,b) => b[1]-a[1]).slice(0, 7);
+      const etiquetas = sorted.map(([s]) => s);
+      const valores   = sorted.map(([,v]) => v);
+
+      if (chartSect) chartSect.destroy();
+      chartSect = new Chart(document.getElementById('cSectores'), {
+        type: 'bar',
+        data: { labels: etiquetas, datasets: [{ label: 'Encuestas', data: valores, backgroundColor: C.blue2, borderRadius: 6, borderSkipped: false }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: TT },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: C.inkL, font: { size: 10 }, autoSkip: false, maxRotation: 35 }, border: { color: C.border } },
+            y: { beginAtZero: true, ticks: { stepSize: 1, color: C.inkL, font: { size: 11 } }, grid: { color: '#F0EDE8' }, border: { dash: [4,4], color: 'transparent' } }
+          }
+        }
+      });
+    }
+
+    document.getElementById('periodTabs').addEventListener('click', e => {
+      const btn = e.target.closest('.period-tab');
+      if (!btn) return;
+      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderTodo(parseInt(btn.dataset.dias));
+    });
+
+    cargarDatos();
+</script>
+</body>
+</html>
