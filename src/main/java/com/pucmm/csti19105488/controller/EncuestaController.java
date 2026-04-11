@@ -60,7 +60,7 @@ public class EncuestaController {
                 post(ctx -> {
                     String email = ctx.attribute("email");
 
-                    @SuppressWarnings("unchecked")
+
                     Map<String, Object> body = mapper.readValue(ctx.body(), Map.class);
                     @SuppressWarnings("unchecked")
                     List<Map<String, Object>> records =

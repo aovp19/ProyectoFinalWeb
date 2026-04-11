@@ -61,6 +61,12 @@ public class Main {
 
             // Rutas
             config.routes.apiBuilder(() -> {
+                get("/", ctx -> ctx.json(java.util.Map.of(
+                        "status", "ok",
+                        "message", "API de Encuestas corriendo",
+                        "puerto", 7000
+                )));
+
                 // Filtro JWT para rutas protegidas
                 before("/encuestas", Main::filtroJwt);
                 before("/encuestas/*", Main::filtroJwt);
@@ -91,6 +97,7 @@ public class Main {
                 ctx.json(service.crearParaHttp(body));
             });
 
+            config.routes.get("/ping", ctx -> ctx.status(200).result("pong"));
 
         }).start(7000);;
 

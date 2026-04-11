@@ -3,6 +3,8 @@ syntax = "proto3";
 option java_package = "com.pucmm.csti19105488.grpc";
 option java_outer_classname = "FormularioProto";
 
+// Define los métodos remotos disponibles esto equivale a los endpoints de una API REST
+// pero usando el protocolo gRPC
 service FormularioService {
   rpc ListarFormularios (ListarRequest) returns (ListarResponse);
   rpc CrearFormulario (FormularioRequest) returns (FormularioResponse);
@@ -12,10 +14,15 @@ message ListarRequest {
   string usuario_id = 1;
 }
 
+// Lo que el servidor devuelve al listar contiene una lista de formularios
 message ListarResponse {
   repeated FormularioMessage formularios = 1;
 }
 
+// ESTRUCTURA DE DATOS
+// Representa un formulario individual dentro de la lista de respuesta
+// Cada campo tiene un número único (= 1, = 2...) esto es el identificador
+// binario en el protocolo Protobuf, NO es un orden ni un índice
 message FormularioMessage {
   string id = 1;
   string nombre_encuestado = 2;
@@ -29,6 +36,8 @@ message FormularioMessage {
   bool sincronizado = 10;
 }
 
+
+// Lo que el cliente envía al llamar CrearFormulario
 message FormularioRequest {
   string nombre_encuestado = 1;
   string apellido_encuestado = 2;
@@ -40,6 +49,7 @@ message FormularioRequest {
   string encuestador_email = 8;
 }
 
+// Lo que el servidor devuelve al crear confirmación simple
 message FormularioResponse {
   bool exitoso = 1;
   string mensaje = 2;
