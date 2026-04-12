@@ -39,7 +39,7 @@ public class EncuestaController {
                 String email = ctx.attribute("email");
                 System.out.println("Email del token: " + email);
                 Usuario encuestador = usuarioService.buscarPorEmail(email);
-                System.out.println("Encuestador encontrado: " + (encuestador != null ? encuestador.getEmail() : "NULL"));
+                //System.out.println("Encuestador encontrado: " + (encuestador != null ? encuestador.getEmail() : "NULL"));
                 encuesta.setEncuestador(encuestador);
                 encuesta.setSincronizado(true);
                 encuesta.setFechaRegistro(LocalDateTime.now());
