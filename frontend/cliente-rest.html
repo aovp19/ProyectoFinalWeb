@@ -95,6 +95,10 @@
                                 <input type="text" id="cApellido" class="form-control" placeholder="Ej: Pérez">
                             </div>
                             <div class="col-md-4">
+                                <label class="form-label fw-semibold">Cédula</label>
+                                <input type="text" id="cCedula" class="form-control" placeholder="Ej: 402-1234567-8">
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label fw-semibold">Sector</label>
                                 <input type="text" id="cSector" class="form-control" placeholder="Ej: Villa Consuelo">
                             </div>
@@ -233,6 +237,7 @@
         const body = {
             nombreEncuestado:   document.getElementById('cNombre').value,
             apellidoEncuestado: document.getElementById('cApellido').value,
+            cedula:             document.getElementById('cCedula').value,
             sector:             document.getElementById('cSector').value,
             educacion:          document.getElementById('cNivel').value,
             ubicacion: {

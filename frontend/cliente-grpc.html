@@ -70,6 +70,10 @@
                                 <input type="text" id="gApellido" class="form-control" placeholder="Ej: García">
                             </div>
                             <div class="col-md-4">
+                                <label class="form-label fw-semibold">Cédula</label>
+                                <input type="text" id="gCedula" class="form-control" placeholder="Ej: 402-1234567-8">
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label fw-semibold">Sector</label>
                                 <input type="text" id="gSector" class="form-control" placeholder="Ej: Ensanche Ozama">
                             </div>
@@ -199,6 +203,7 @@
             const data = await llamarGrpc('CrearFormulario', {
                 nombreEncuestado:   document.getElementById('gNombre').value,
                 apellidoEncuestado: document.getElementById('gApellido').value,
+                cedula:             document.getElementById('gCedula').value,
                 sector:             document.getElementById('gSector').value,
                 educacion:          document.getElementById('gNivel').value,
                 latitud:            parseFloat(document.getElementById('gLat').value),
