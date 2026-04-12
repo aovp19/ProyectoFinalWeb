@@ -1,14 +1,18 @@
 let ws = null;
 let syncInProgress = false;
 let _token = null;
-let _wsUrl = 'ws://localhost/sync';
+let _wsUrl = (self.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//localhost/sync';
 
 // Un solo onmessage
 self.onmessage = (e) => {
     const { type, payload } = e.data;
     switch (type) {
         case 'INIT':
-            if (payload.wsUrl)  _wsUrl  = payload.wsUrl;
+            if (payload.wsUrl) {
+                const proto = self.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const clean = payload.wsUrl.replace('ws://', '').replace('wss://', '');
+                _wsUrl = proto + '//' + clean;
+            }
             if (payload.token)  _token  = payload.token;
             startConnectivityMonitor();
             break;
