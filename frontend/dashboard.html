@@ -116,7 +116,7 @@
                     <div class="chart-header">
                         <div>
                             <div class="chart-title">Encuestas por día</div>
-                            <div class="chart-sub">Últimos 7 días</div>
+                            <div class="chart-sub">Últimos 14 días</div>
                         </div>
                     </div>
                     <div class="chart-wrap">
@@ -294,7 +294,7 @@
 
         console.log("renderGraficoDias llamado, total:", encuestas.length);
         console.log("labels y valores:");
-        for (let i = 6; i >= 0; i--) {
+        for (let i = 13; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
 

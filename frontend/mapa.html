@@ -67,7 +67,7 @@
                             <option value="">Todos</option>
                             <option value="BASICO">Básico</option>
                             <option value="MEDIO">Medio</option>
-                            <option value="UNIVERSITARIO">Universitario</option>
+                            <option value="GRADO">Grado</option>
                             <option value="POSTGRADO">Postgrado</option>
                             <option value="DOCTORADO">Doctorado</option>
                         </select>
@@ -181,7 +181,7 @@
                     <div class="popup-name">${encuesta.nombreEncuestado} ${encuesta.apellidoEncuestado}</div>
                     <div class="popup-row"><i class="bi bi-geo-alt-fill"></i> ${encuesta.sector || '—'}</div>
                     <div class="popup-row"><i class="bi bi-mortarboard-fill"></i> ${encuesta.educacion || '—'}</div>
-                    <div class="popup-row"><i class="bi bi-person-fill"></i> ${encuesta.encuestador?.nombre || '—'}</div>
+                    <div class="popup-row"><i class="bi bi-person-fill"></i> ${encuesta.encuestadorNombre || '—'}</div>
                     <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
                 </div>
             `, { maxWidth: 260 });

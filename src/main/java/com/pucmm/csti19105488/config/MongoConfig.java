@@ -28,7 +28,9 @@ public class MongoConfig {
 
             // Cerrar la conexion al apagar la aplicacion
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                this.mongoClient.close();
+                if (mongoClient != null) {
+                    mongoClient.close();
+                }
                 System.out.println("Conexion a MongoDB cerrada correctamente.");
             }));
 

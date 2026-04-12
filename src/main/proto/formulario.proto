@@ -49,6 +49,7 @@ message FormularioRequest {
   double longitud = 7;
   string foto_base64 = 8;
   string encuestador_email = 9;
+  string fecha_registro = 10;
 }
 
 // Lo que el servidor devuelve al crear confirmación simple

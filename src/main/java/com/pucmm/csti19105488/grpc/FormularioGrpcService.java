@@ -9,8 +9,10 @@ import com.pucmm.csti19105488.service.UsuarioService;
 import com.pucmm.csti19105488.grpc.FormularioProto.*;
 import com.pucmm.csti19105488.grpc.FormularioServiceGrpc;
 import io.grpc.stub.StreamObserver;
+import net.bytebuddy.asm.Advice;
 import org.bson.types.ObjectId;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class FormularioGrpcService extends FormularioServiceGrpc.FormularioServiceImplBase {
@@ -76,11 +78,13 @@ public class FormularioGrpcService extends FormularioServiceGrpc.FormularioServi
             Encuesta encuesta = new Encuesta();
             encuesta.setNombreEncuestado(request.getNombreEncuestado());
             encuesta.setApellidoEncuestado(request.getApellidoEncuestado());
+            encuesta.setCedula(request.getCedulaEncuestado());
             encuesta.setSector(request.getSector());
             encuesta.setEducacion(NivelEducativo.valueOf(request.getEducacion()));
             encuesta.setUbicacion(new Ubicacion(request.getLatitud(), request.getLongitud()));
             encuesta.setEncuestador(encuestador);
             encuesta.setSincronizado(true);
+            encuesta.setFechaRegistro(LocalDateTime.now());
             if (!request.getFotoBase64().isEmpty()) {
                 encuesta.setFotoBase64(request.getFotoBase64());
             }
@@ -145,6 +149,7 @@ public class FormularioGrpcService extends FormularioServiceGrpc.FormularioServi
             Encuesta encuesta = new Encuesta();
             encuesta.setNombreEncuestado((String) body.get("nombreEncuestado"));
             encuesta.setApellidoEncuestado((String) body.get("apellidoEncuestado"));
+            encuesta.setCedula((String) body.get("cedula"));
             encuesta.setSector((String) body.get("sector"));
             encuesta.setEducacion(NivelEducativo.valueOf((String) body.get("educacion")));
 
@@ -153,6 +158,7 @@ public class FormularioGrpcService extends FormularioServiceGrpc.FormularioServi
             encuesta.setUbicacion(new Ubicacion(lat, lng));
             encuesta.setEncuestador(encuestador);
             encuesta.setSincronizado(true);
+            encuesta.setFechaRegistro(LocalDateTime.now());
 
             String foto = (String) body.get("fotoBase64");
             if (foto != null && !foto.isEmpty()) encuesta.setFotoBase64(foto);

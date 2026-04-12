@@ -178,7 +178,7 @@
       const corte = new Date();
       corte.setDate(corte.getDate() - dias);
       return todasLasEncuestas.filter(e => {
-        const f = e.fechaCreacion ? new Date(e.fechaCreacion) : null;
+        const f = e.fechaRegistro ? new Date(e.fechaRegistro) : null;
         return f && f >= corte;
       });
     }
@@ -215,7 +215,7 @@
         d.setDate(d.getDate() - i);
         const key = d.toISOString().slice(0, 10);
         labels.push(key.slice(5));
-        const del_dia = datos.filter(e => e.fechaCreacion && new Date(e.fechaCreacion).toISOString().slice(0,10) === key);
+        const del_dia = datos.filter(e => e.fechaRegistro && new Date(e.fechaRegistro).toISOString().slice(0,10) === key);
         sincArr.push(del_dia.filter(e => e.sincronizado).length);
         pendArr.push(del_dia.filter(e => !e.sincronizado).length);
       }
@@ -264,8 +264,8 @@
     }
 
     function renderDonut(datos) {
-      const niveles = ['UNIVERSITARIO','MEDIO','POSTGRADO','BASICO','DOCTORADO'];
-      const labels  = ['Universitario','Medio','Postgrado','Básico','Doctorado'];
+      const niveles = ['GRADO','MEDIO','POSTGRADO','BASICO','DOCTORADO'];
+      const labels  = ['Grado','Medio','Postgrado','Básico','Doctorado'];
       const values  = niveles.map(n => datos.filter(e => e.educacion === n).length);
       const total   = values.reduce((a,b) => a+b, 0) || 1;
 
