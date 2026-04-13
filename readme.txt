@@ -105,7 +105,7 @@ Maria Jose Cruz - 10164963
 
     base de datos mongo db:
     user: server_user
-    password: qbwLXhV3b4ocRGx8
+    password: ServerUser2026
 
     6. Configuración de la Base de Datos
 
