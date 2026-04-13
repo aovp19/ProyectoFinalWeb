@@ -2,12 +2,12 @@ Proyecto Final Web – Servidor de Encuestas con REST, gRPC y MongoDB
 ICC-352 Programación Web – PUCMM
 
 Almy Ventura – 10153712
-Maria Jose Cruz - 10154963
+Maria Jose Cruz - 10164963
 12 de Abril 2026
 
     1. Descripción del Proyecto
 
-       Aplicación web para la gestión de encuestas, desplegada mediante Docker,
+       Aplicación web fullstack para la gestión de encuestas, desplegada mediante Docker,
        utilizando Java como backend principal e implementando:
 
        - API REST con Javalin para operaciones CRUD de encuestas y usuarios
@@ -37,7 +37,6 @@ Maria Jose Cruz - 10154963
 
     3. Estructura del Proyecto
 
-
        ProyectoFinalWeb/
          src/main/java/com/pucmm/csti19105488/
            Main.java                    → Punto de entrada de la aplicación
@@ -66,9 +65,7 @@ Maria Jose Cruz - 10154963
            formulario.proto            → Definición del servicio gRPC
 
          src/main/resources/
-           config.properties           → URI y nombre de la base de datos 
-					(debe crearlo localmente ya que contiene informacion sencible)
-					Las credenciales correspondientes se detallan mas abajo
+           config.properties           → URI y nombre de la base de datos
 
          frontend/
            index.html                  → Página principal / login
@@ -101,27 +98,27 @@ Maria Jose Cruz - 10154963
        El frontend se comunica con el backend a través del proxy configurado en nginx.conf.
 
     5. Credenciales:
-	
-	login: 
-	usuario admin: admin@ce.pucmm.edu.do
-	password: admin123
 
-	Credenciales para mongodb:
-	user: server_user
-	password: qbwLXhV3b4ocRGx8
+    login:
+    user: admin@ce.pucmm.edu.do
+    password: admin123
+
+    base de datos mongo db:
+    user: server_user
+    password: qbwLXhV3b4ocRGx8
 
     6. Configuración de la Base de Datos
 
        La conexión a MongoDB se establece mediante el archivo:
-           src/main/resources/config.properties
+           src/main/resources/config.properties -> debe crearlo pues contiene informacion sensible
 
-	contenido del config.properties
-	mongo.uri=mongodb+srv://<db_username>:<db_password>@proyectofinalweb.v9hjgvv.mongodb.net/?appName=ProyectoFinalWeb
-	mongo.database=ProyectoFinalWeb
+           Contenido del archivo:
 
+           mongo.uri=mongodb+srv://<db_username>:<db_password>@proyectofinalweb.v9hjgvv.mongodb.net/?appName=ProyectoFinalWeb
+           mongo.database=ProyectoFinalWeb
 
        Parámetros requeridos:
-           * mongo.uri      → URI de conexión a MongoDB Atlas 
+           * mongo.uri      → URI de conexión a MongoDB Atlas
            * mongo.database → Nombre de la base de datos (ProyectoFinalWeb)
 
     7. Cómo Ejecutar el Proyecto
@@ -135,19 +132,6 @@ Maria Jose Cruz - 10154963
 
            3. Abrir el navegador en: http://localhost:8080
 
-       Sin Docker (solo backend):
-
-           1. Asegurarse de tener Java 17+ y Gradle instalados.
-           2. Compilar y empaquetar:
-
-                  ./gradlew shadowJar
-
-           3. Ejecutar el JAR generado:
-
-                  java -jar build/libs/ProyectoFinalWeb-1.0-SNAPSHOT-all.jar
-
-           4. Servir la carpeta /frontend con cualquier servidor estático local.
-
     8. Conclusión
 
        Se logró implementar exitosamente una aplicación web fullstack para gestión de
@@ -157,5 +141,4 @@ Maria Jose Cruz - 10154963
        containerización con Docker garantiza portabilidad y facilidad de despliegue,
        cumpliendo con los requerimientos del proyecto final de la asignatura.
 
-	Enlace a la aplicacion: https://gestion-encuestas-pucmm.aovp.dev/
-	
+       Enlace a la aplicacion: https://gestion-encuestas-pucmm.aovp.dev/
