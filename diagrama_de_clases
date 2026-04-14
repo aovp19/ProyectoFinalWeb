@@ -1,0 +1,50 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class Encuesta {
+  - educacion: NivelEducativo
+  - apellidoEncuestado: String
+  - cedula: String
+  - sincronizado: boolean
+  - id: ObjectId
+  - fotoBase64: String
+  - sector: String
+  - encuestador: Usuario
+  - fechaRegistro: LocalDateTime
+  - nombreEncuestado: String
+  - ubicacion: Ubicacion
+}
+enum NivelEducativo << enumeration >> {
+  + GRADO: 
+  + POSTGRADO: 
+  + MEDIO: 
+  + DOCTORADO: 
+  + BASICO: 
+}
+enum Rol << enumeration >> {
+  + ADMIN: 
+  + ENCUESTADOR: 
+}
+class Ubicacion {
+  - latitud: double
+  - longitud: double
+}
+class Usuario {
+  - fotoBase64: String
+  - apellido: String
+  - email: String
+  - id: ObjectId
+  - nombre: String
+  - activo: boolean
+  - password: String
+  - rol: Rol
+}
+
+Encuesta       "1" *-[#595959,plain]-> "educacion\n1" NivelEducativo 
+Encuesta       "1" *-[#595959,plain]-> "ubicacion\n1" Ubicacion      
+Encuesta       "1" *-[#595959,plain]-> "encuestador\n1" Usuario        
+Usuario        "1" *-[#595959,plain]-> "rol\n1" Rol            
+@enduml
