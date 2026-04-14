@@ -58,7 +58,7 @@ db.encuestas.insertOne({
     sincronizado:  true
 });
 
-print("✅ Colección 'encuestas' creada con documento de ejemplo.");
+print("Colección 'encuestas' creada con documento de ejemplo.");
 
 // ============================================================
 // Resumen
