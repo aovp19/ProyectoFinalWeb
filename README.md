@@ -141,7 +141,7 @@ Contraseña: admin123
 
 ```
 Usuario:    server_user
-Contraseña: qbwLXhV3b4ocRGx8
+Contraseña: ServerUser2026
 ```
 
 ---
